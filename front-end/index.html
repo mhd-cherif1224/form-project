@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Form</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+
+    <h2>Gestion des Clients</h2>
+
+    <nav>
+        <button class="tab active" id="addTab">Nouveau Client</button>
+        <button class="tab" id="listTab">Liste des Clients</button>
+    </nav>
+
+</header>
+<section id="addClientSection">
+<div class="container">
+
+    <h1>Nouveau Client</h1>
+
+    <form id="clientForm">
+
+        <!-- Nom -->
+        <div class="group">
+            <label for="nom">Nom *</label>
+            <input
+                type="text"
+                id="nom"
+                name="nom"
+                placeholder="Nom"
+                required>
+        </div>
+
+        <!-- Prénom -->
+        <div class="group">
+            <label for="prenom">Prénom *</label>
+            <input
+                type="text"
+                id="prenom"
+                name="prenom"
+                placeholder="Prénom"
+                required>
+        </div>
+
+        <h3>Moyens de contact</h3>
+
+        <div class="checks">
+
+            <!-- Numéro -->
+            <label>
+                <input
+                    type="checkbox"
+                    id="phoneCheck">
+                Numéro
+            </label>
+
+            <div id="phoneField" class="hidden">
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="+213560123456"
+                    pattern="^\+?[0-9]{6,15}$">
+            </div>
+
+            <!-- WhatsApp -->
+            <label>
+                <input
+                    type="checkbox"
+                    id="whatsappCheck">
+                WhatsApp
+            </label>
+
+            <div id="whatsappField" class="hidden">
+                <input
+                    type="tel"
+                    id="whatsapp"
+                    name="whatsapp"
+                    placeholder="+213560123456"
+                    pattern="^\+?[0-9]{6,15}$">
+            </div>
+
+            <!-- Facebook -->
+            <label>
+                <input
+                    type="checkbox"
+                    id="facebookCheck">
+                Facebook
+            </label>
+
+            <div id="facebookField" class="hidden">
+                <input
+                    type="text"
+                    id="facebook"
+                    name="facebook"
+                    placeholder="Nom Facebook">
+            </div>
+
+            <!-- Instagram -->
+            <label>
+                <input
+                    type="checkbox"
+                    id="instagramCheck">
+                Instagram
+            </label>
+
+            <div id="instagramField" class="hidden">
+                <input
+                    type="text"
+                    id="instagram"
+                    name="instagram"
+                    placeholder="Nom Instagram">
+            </div>
+
+            <!-- Snapchat -->
+            <label>
+                <input
+                    type="checkbox"
+                    id="snapCheck">
+                Snapchat
+            </label>
+
+            <div id="snapField" class="hidden">
+                <input
+                    type="text"
+                    id="snapchat"
+                    name="snapchat"
+                    placeholder="Nom Snapchat">
+            </div>
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="tiktokCheck">
+                TikTok
+            </label>
+
+            <div id="tiktokField" class="hidden">
+                <input
+                    type="text"
+                    id="tiktok"
+                    name="tiktok"
+                    placeholder="Nom TikTok">
+            </div>
+
+        </div>
+
+        <!-- Description -->
+        <div class="group">
+            <label for="description">Description *</label>
+            <textarea
+                id="description"
+                name="description"
+                rows="5"
+                placeholder="Ajouter une description..."
+                required></textarea>
+        </div>
+
+        <!-- Travail -->
+        <div class="group">
+            <label for="travail">Travail *</label>
+
+            <select
+                id="travail"
+                name="travail"
+                required>
+
+                <option value="" selected disabled>
+                    Choisir...
+                </option>
+
+                <option value="en_cours">
+                    En cours
+                </option>
+
+                <option value="fini">
+                    Fini
+                </option>
+
+            </select>
+        </div>
+
+        <!-- Assignation -->
+        <div class="group">
+
+            <label>Assigné à *</label>
+
+            <div class="workers">
+
+                <input
+                    type="radio"
+                    id="faycal"
+                    name="worker"
+                    value="Faycal Mancer"
+                    required>
+
+                <label
+                    for="faycal"
+                    class="worker-btn">
+                    Faycal Mancer
+                </label>
+
+
+                <input
+                    type="radio"
+                    id="zakari"
+                    name="worker"
+                    value="Aouchiche Zakari">
+
+                <label
+                    for="zakari"
+                    class="worker-btn">
+                    Aouchiche Zakari
+                </label>
+
+
+                <input
+                    type="radio"
+                    id="reda"
+                    name="worker"
+                    value="Reda">
+
+                <label
+                    for="reda"
+                    class="worker-btn">
+                    Reda
+                </label>
+
+            </div>
+
+        </div>
+
+        <button type="submit">
+            Enregistrer
+        </button>
+
+    </form>
+
+</div>
+</section>
+<section id="listClientSection" class="hidden">
+
+    <h2>Liste des Clients</h2>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Téléphone</th>
+                <th>WhatsApp</th>
+                <th>Facebook</th>
+                <th>Instagram</th>
+                <th>Snapchat</th>
+                <th>TikTok</th>
+                <th>Travail</th>
+                <th>Assigné à</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="clientsTable">
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<script src="script.js"></script>
+</script>
+
+</body>
+</html>
