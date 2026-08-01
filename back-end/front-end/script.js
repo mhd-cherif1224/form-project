@@ -33,18 +33,20 @@ const tiktokCheck = document.getElementById("tiktokCheck");
 let clients = [];
 let editingClientId = null;
 
+let currentPage = 1;
+let currentSearch = "";
+const PAGE_SIZE = 50;
+
 // ==============================
 // Display Clients
 // ==============================
+
 
 function displayClients(clientList) {
 
     const table = document.getElementById("clientsTable");
 
-    table.innerHTML = "";
-
     if (clientList.length === 0) {
-
         table.innerHTML = `
             <tr>
                 <td colspan="10" style="text-align:center;">
@@ -52,44 +54,33 @@ function displayClients(clientList) {
                 </td>
             </tr>
         `;
-
         return;
     }
 
-    clientList.forEach(client => {
+    const rows = clientList.map(client => `
+        <tr class="client-row" data-id="${client.id}">
+            <td>${client.nom}</td>
+            <td>${client.prenom}</td>
+            <td>${client.fonctionne}</td>
+            <td>${client.telephone ?? "-"}</td>
+            <td>${client.whatsapp ?? "-"}</td>
+            <td>${client.facebook ?? "-"}</td>
+            <td>${client.instagram ?? "-"}</td>
+            <td>${client.snapchat ?? "-"}</td>
+            <td>${client.tiktok ?? "-"}</td>
+            <td>${client.travail}</td>
+            <td>${client.assigne_a}</td>
+        </tr>
+    `).join("");
 
-        table.innerHTML += `
-            <tr class="client-row" data-id="${client.id}">
-                <td>${client.nom}</td>
-                <td>${client.prenom}</td>
-                <td>${client.fonctionne}</td>
-                <td>${client.telephone ?? "-"}</td>
-                <td>${client.whatsapp ?? "-"}</td>
-                <td>${client.facebook ?? "-"}</td>
-                <td>${client.instagram ?? "-"}</td>
-                <td>${client.snapchat ?? "-"}</td>
-                <td>${client.tiktok ?? "-"}</td>
-                <td>${client.travail}</td>
-                <td>${client.assigne_a}</td>
-            </tr>
-        `;
-
-    });
+    table.innerHTML = rows;
 
     document.querySelectorAll(".client-row").forEach(row => {
-
         row.addEventListener("dblclick", () => {
-
             const id = Number(row.dataset.id);
-
             const client = clients.find(c => c.id === id);
-
-            if (client) {
-                openClient(client);
-            }
-
+            if (client) openClient(client);
         });
-
     });
 
 }
@@ -100,19 +91,15 @@ function displayClients(clientList) {
 
 searchInput.style.display = "none";
 
+let searchTimeout;
+
 searchInput.addEventListener("input", () => {
 
-    const value = searchInput.value.toLowerCase();
+    clearTimeout(searchTimeout);
 
-    const filtered = clients.filter(client =>
-        Object.values(client).some(field =>
-            String(field ?? "")
-                .toLowerCase()
-                .includes(value)
-        )
-    );
-
-    displayClients(filtered);
+    searchTimeout = setTimeout(() => {
+        loadClients(1, searchInput.value.trim());
+    }, 300); // debounce: wait 300ms after typing stops
 
 });
 
@@ -142,7 +129,7 @@ listTab.addEventListener("click", () => {
 
     searchInput.style.display = "block";
 
-    loadClients();
+    loadClients(1, ""); // reset to page 1, no search filter
 
 });
 
@@ -188,19 +175,27 @@ function resetForm() {
 // Load Clients
 // ==============================
 
-async function loadClients() {
+async function loadClients(page = 1, search = "") {
 
     try {
 
-        const response = await fetch("/api/clients");
+        currentPage = page;
+        currentSearch = search;
+
+        const url = `/api/clients?page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(search)}`;
+
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error("Impossible de récupérer les clients.");
         }
 
-        clients = await response.json();
+        const data = await response.json();
+
+        clients = data.clients;
 
         displayClients(clients);
+        renderPagination(data.page, data.totalPages);
 
     } catch (error) {
 
@@ -497,6 +492,32 @@ form.addEventListener("submit", async (e) => {
     
 
 });
+
+function renderPagination(page, totalPages) {
+
+    let container = document.getElementById("paginationControls");
+
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "paginationControls";
+        document.getElementById("listClientSection").appendChild(container);
+    }
+
+    container.innerHTML = `
+        <button id="prevPageBtn" ${page <= 1 ? "disabled" : ""}>Précédent</button>
+        <span> Page ${page} / ${totalPages || 1} </span>
+        <button id="nextPageBtn" ${page >= totalPages ? "disabled" : ""}>Suivant</button>
+    `;
+
+    document.getElementById("prevPageBtn").addEventListener("click", () => {
+        if (currentPage > 1) loadClients(currentPage - 1, currentSearch);
+    });
+
+    document.getElementById("nextPageBtn").addEventListener("click", () => {
+        if (currentPage < totalPages) loadClients(currentPage + 1, currentSearch);
+    });
+
+}
 
 // ==============================
 // Initial Page State
