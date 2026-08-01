@@ -10,7 +10,11 @@
 <header class="header">
 
     <h2>Gestion des Clients</h2>
-
+    <input
+    type="text"
+    id="searchInput"
+    placeholder="Rechercher un client..."
+    >
     <nav>
         <button class="tab active" id="addTab">Nouveau Client</button>
         <button class="tab" id="listTab">Liste des Clients</button>
@@ -45,6 +49,14 @@
                 placeholder="Prénom"
                 required>
         </div>
+        <div class="group">
+    <label for="fonctionne">Fonctionne</label>
+        <input
+            type="text"
+            id="fonctionne"
+            name="fonctionne"
+        >
+    </div>
 
         <h3>Moyens de contact</h3>
 
@@ -227,7 +239,7 @@
                 <label
                     for="reda"
                     class="worker-btn">
-                    Reda
+                    Sadaoui Reda 
                 </label>
 
             </div>
@@ -254,6 +266,7 @@
 
                 <th>Nom</th>
                 <th>Prénom</th>
+                <th>Fonctionne</th>
                 <th>Téléphone</th>
                 <th>WhatsApp</th>
                 <th>Facebook</th>
