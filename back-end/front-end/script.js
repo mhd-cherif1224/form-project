@@ -423,7 +423,6 @@ function validateForm() {
 // ==============================
 // Submit Form
 // ==============================
-
 form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
@@ -432,10 +431,57 @@ form.addEventListener("submit", async (e) => {
 
     const data = getClientData();
 
-    const isEditing = editingClientId !== null;
+    let isEditing = editingClientId !== null;
+    let targetId = editingClientId;
+
+    if (!isEditing) {
+
+        try {
+
+            const params = new URLSearchParams();
+
+            if (data.nom) params.append("nom", data.nom);
+            if (data.prenom) params.append("prenom", data.prenom);
+            if (data.telephone) params.append("telephone", data.telephone);
+            if (data.whatsapp) params.append("whatsapp", data.whatsapp);
+            if (data.facebook) params.append("facebook", data.facebook);
+            if (data.instagram) params.append("instagram", data.instagram);
+            if (data.snapchat) params.append("snapchat", data.snapchat);
+            if (data.tiktok) params.append("tiktok", data.tiktok);
+
+            const checkResponse = await fetch(`/api/clients/check?${params.toString()}`);
+
+            const checkResult = await checkResponse.json();
+
+            if (checkResult.exists) {
+
+                const fieldsList = checkResult.matchedFields.join(", ");
+
+                const confirmed = confirm(
+                    `Ce client existe déjà (correspondance sur : ${fieldsList}). Voulez-vous écraser ses coordonnées avec les nouvelles ?`
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                isEditing = true;
+                targetId = checkResult.client.id;
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+            alert("Erreur lors de la vérification du client.");
+            return;
+
+        }
+
+    }
 
     const url = isEditing
-            ? `/api/clients/${editingClientId}`
+            ? `/api/clients/${targetId}`
             : "/api/clients";
 
     const method = isEditing ? "PUT" : "POST";
@@ -453,8 +499,6 @@ form.addEventListener("submit", async (e) => {
             body: JSON.stringify(data)
 
         });
-        const data2 = getClientData();
-    console.log(data2);
 
         const result = await response.json();
 
@@ -473,7 +517,7 @@ form.addEventListener("submit", async (e) => {
 
         resetForm();
 
-        await loadClients();
+        await loadClients(1, "");
 
         addTab.classList.remove("active");
         listTab.classList.add("active");
@@ -489,7 +533,6 @@ form.addEventListener("submit", async (e) => {
         alert("Impossible de contacter le serveur.");
 
     }
-    
 
 });
 

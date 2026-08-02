@@ -4,9 +4,11 @@ const router = express.Router();
 const {
     createClient,
     getClients,
-    updateClient
+    updateClient,
+    checkClient
 } = require("../controllers/clientsController");
 
+router.get("/check", checkClient);
 router.get("/", getClients);
 router.post("/", createClient);
 router.put("/:id", updateClient);

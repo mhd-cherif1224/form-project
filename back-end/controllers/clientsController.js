@@ -214,3 +214,124 @@ exports.updateClient = (req, res) => {
     );
 
 };
+
+exports.checkClient = (req, res) => {
+
+    const {
+        nom,
+        prenom,
+        telephone,
+        whatsapp,
+        facebook,
+        instagram,
+        snapchat,
+        tiktok
+    } = req.query;
+
+    // Build dynamic conditions only for fields that were actually provided
+    const conditions = [];
+    const params = [];
+
+    if (nom && prenom) {
+        conditions.push(`(LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?))`);
+        params.push(nom.trim(), prenom.trim());
+    }
+
+    if (telephone) {
+        conditions.push(`telephone = ?`);
+        params.push(telephone.trim());
+    }
+
+    if (whatsapp) {
+        conditions.push(`whatsapp = ?`);
+        params.push(whatsapp.trim());
+    }
+
+    if (facebook) {
+        conditions.push(`LOWER(facebook) = LOWER(?)`);
+        params.push(facebook.trim());
+    }
+
+    if (instagram) {
+        conditions.push(`LOWER(instagram) = LOWER(?)`);
+        params.push(instagram.trim());
+    }
+
+    if (snapchat) {
+        conditions.push(`LOWER(snapchat) = LOWER(?)`);
+        params.push(snapchat.trim());
+    }
+
+    if (tiktok) {
+        conditions.push(`LOWER(tiktok) = LOWER(?)`);
+        params.push(tiktok.trim());
+    }
+
+    if (conditions.length === 0) {
+        return res.json({ exists: false });
+    }
+
+    const sql = `
+        SELECT *
+        FROM clients
+        WHERE ${conditions.join(" OR ")}
+        LIMIT 1
+    `;
+
+    db.query(sql, params, (err, result) => {
+
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Erreur serveur." });
+        }
+
+        if (result.length === 0) {
+            return res.json({ exists: false });
+        }
+
+        const existing = result[0];
+
+        // Figure out exactly which fields matched, to build a clear message
+        const matchedFields = [];
+
+        if (
+            nom && prenom &&
+            existing.nom.toLowerCase() === nom.trim().toLowerCase() &&
+            existing.prenom.toLowerCase() === prenom.trim().toLowerCase()
+        ) {
+            matchedFields.push("Nom et prénom");
+        }
+
+        if (telephone && existing.telephone === telephone.trim()) {
+            matchedFields.push("Téléphone");
+        }
+
+        if (whatsapp && existing.whatsapp === whatsapp.trim()) {
+            matchedFields.push("WhatsApp");
+        }
+
+        if (facebook && existing.facebook?.toLowerCase() === facebook.trim().toLowerCase()) {
+            matchedFields.push("Facebook");
+        }
+
+        if (instagram && existing.instagram?.toLowerCase() === instagram.trim().toLowerCase()) {
+            matchedFields.push("Instagram");
+        }
+
+        if (snapchat && existing.snapchat?.toLowerCase() === snapchat.trim().toLowerCase()) {
+            matchedFields.push("Snapchat");
+        }
+
+        if (tiktok && existing.tiktok?.toLowerCase() === tiktok.trim().toLowerCase()) {
+            matchedFields.push("TikTok");
+        }
+
+        res.json({
+            exists: true,
+            client: existing,
+            matchedFields
+        });
+
+    });
+
+};
