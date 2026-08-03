@@ -29,6 +29,14 @@ const reservationCheck = document.getElementById("reservCheck");
 const reservationDeQuoi = document.getElementById("reservDeQuoi");
 const reservationQuand = document.getElementById("reservQuand");
 
+let reminderDatetime = null;
+
+const floatingReminderBtn = document.getElementById("floatingReminderBtn");
+const reminderModal = document.getElementById("reminderModal");
+const reminderDateTimeInput = document.getElementById("reminderDateTime");
+const cancelReminderBtn = document.getElementById("cancelReminderBtn");
+const saveReminderBtn = document.getElementById("saveReminderBtn");
+
 
 // ==============================
 // Global Variables
@@ -57,6 +65,22 @@ function formatDate(dateString) {
 
 }
 
+function formatReminder(dateTimeString) {
+
+    if (!dateTimeString) return "-";
+
+    const date = new Date(dateTimeString);
+
+    const jj = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+
+    return `${jj}.${mm}.${yyyy} ${hh}:${min}`;
+
+}
+
 // ==============================
 // Display Clients
 // ==============================
@@ -69,7 +93,7 @@ function displayClients(clientList) {
     if (clientList.length === 0) {
         table.innerHTML = `
             <tr>
-                <td colspan="10" style="text-align:center;">
+                <td colspan="15" style="text-align:center;">
                     Aucun client trouvé.
                 </td>
             </tr>
@@ -93,6 +117,7 @@ function displayClients(clientList) {
             <td>${formatDate(client.reservation_date)}</td>
             <td>${client.travail}</td>
             <td>${client.assigne_a}</td>
+            <td>${formatReminder(client.reminder_datetime)}</td>
         </tr>
     `).join("");
 
@@ -163,6 +188,7 @@ listTab.addEventListener("click", () => {
 function resetForm() {
 
     editingClientId = null;
+    reminderDatetime = null;
 
     form.reset();
 
@@ -454,6 +480,8 @@ function getClientData() {
     ? reservationQuand.value
     : null,
         description: description.value.trim(),
+
+        reminder_datetime: reminderDatetime,
 
         travail: travail.value,
 
@@ -756,6 +784,74 @@ function renderPagination(page, totalPages) {
     });
 
 }
+
+
+floatingReminderBtn.addEventListener("click", () => {
+
+    const client = editingClientId !== null && editingClientId !== undefined
+        ? clients.find(c => c.id === editingClientId)
+        : null;
+
+    reminderDateTimeInput.value = reminderDatetime
+        ? reminderDatetime.slice(0, 16)
+        : client?.reminder_datetime
+            ? client.reminder_datetime.slice(0, 16)
+            : "";
+
+    reminderModal.classList.remove("hidden");
+
+});
+
+cancelReminderBtn.addEventListener("click", () => {
+    reminderModal.classList.add("hidden");
+});
+
+saveReminderBtn.addEventListener("click", async () => {
+
+    const reminder_datetime = reminderDateTimeInput.value;
+
+    if (!reminder_datetime) {
+        alert("Choisissez une date et une heure.");
+        return;
+    }
+
+    reminderDatetime = reminder_datetime;
+
+    if (editingClientId !== null && editingClientId !== undefined) {
+        try {
+
+            const response = await fetch(`/api/clients/${editingClientId}/reminder`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ reminder_datetime })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message);
+            }
+
+            const client = clients.find(c => c.id === editingClientId);
+            if (client) client.reminder_datetime = reminder_datetime;
+            if (!listSection.classList.contains("hidden")) {
+                displayClients(clients);
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert(err.message || "Impossible de contacter le serveur.");
+            return;
+        }
+    }
+
+    alert("Rappel programmé.");
+    reminderModal.classList.add("hidden");
+    reminderDateTimeInput.value = "";
+
+});
 
 // ==============================
 // Initial Page State

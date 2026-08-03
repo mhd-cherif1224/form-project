@@ -3,30 +3,75 @@ const db = require("../config/db");
 
 function generateReminders() {
 
-    const sql = `
+    const insertSql = `
         INSERT INTO reminders
-        (client_id, nom, prenom, telephone, whatsapp, reservation_de_quoi, reservation_date)
-        SELECT id, nom, prenom, telephone, whatsapp, reservation_de_quoi, reservation_date
+        (
+            client_id,
+            nom,
+            prenom,
+            telephone,
+            whatsapp,
+            facebook,
+            instagram,
+            snapchat,
+            tiktok,
+            reservation_de_quoi,
+            reservation_date
+        )
+        SELECT
+            id,
+            nom,
+            prenom,
+            telephone,
+            whatsapp,
+            facebook,
+            instagram,
+            snapchat,
+            tiktok,
+            'Rappel programmé',
+            DATE(reminder_datetime)
         FROM clients
-        WHERE reservation = 'Oui'
-          AND reservation_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-          AND id NOT IN (
-              SELECT client_id
-              FROM reminders
-              WHERE reservation_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-          )
+        WHERE reminder_datetime IS NOT NULL
+          AND reminder_datetime <= NOW()
     `;
 
-    db.query(sql, (err, result) => {
+    db.query(insertSql, (err, result) => {
+
         if (err) {
             console.error(err);
             return;
         }
 
         console.log(`${result.affectedRows} reminder(s) generated`);
+
+        if (result.affectedRows === 0) return;
+
+        // Clear reminder_datetime on the clients we just fired a reminder for.
+        // Without this, the cron re-inserts the same reminder every minute
+        // forever — including right after the user dismisses it.
+        const clearSql = `
+            UPDATE clients
+            SET reminder_datetime = NULL
+            WHERE reminder_datetime IS NOT NULL
+              AND reminder_datetime <= NOW()
+        `;
+
+        db.query(clearSql, (clearErr, clearResult) => {
+
+            if (clearErr) {
+                console.error(clearErr);
+                return;
+            }
+
+            console.log(`${clearResult.affectedRows} client reminder(s) cleared`);
+
+        });
+
     });
+
 }
 
+cron.schedule("* * * * *", generateReminders);
 cron.schedule("0 8 * * *", generateReminders);
 generateReminders();
 

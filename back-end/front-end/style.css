@@ -604,3 +604,79 @@ tbody tr:last-child td{
     flex-direction: column;
     gap: 4px;
 }
+.floating-reminder-btn{
+
+    position:fixed;
+    right:25px;
+    bottom:25px;
+
+    width:60px;
+    height:60px;
+
+    border:none;
+    border-radius:50%;
+
+    background:#2563eb;
+    color:#fff;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    cursor:pointer;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+
+    z-index:9999;
+
+}
+
+.floating-reminder-btn ion-icon{
+
+    font-size:28px;
+
+}
+
+.modal{
+
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.4);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    z-index:10000;
+
+}
+
+.hidden{
+
+    display:none;
+
+}
+
+.modal-content{
+
+    width:400px;
+
+    background:#fff;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+
+}
+
+.modal-content textarea{
+
+    height:90px;
+    resize:none;
+
+}

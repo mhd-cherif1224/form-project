@@ -2,7 +2,6 @@ const db = require("../config/db");
 const generateReminders = require("../jobs/generateReminders");
 
 exports.createClient = (req, res) => {
-    console.log("req.body:", req.body);
     const {
         nom,
         prenom,
@@ -18,12 +17,12 @@ exports.createClient = (req, res) => {
         reservation_date,
         description,
         travail,
-        assigne_a
+        assigne_a,
+        reminder_datetime
     } = req.body;
 
     const sql = `
-        INSERT INTO clients
-        (
+        INSERT INTO clients (
             nom,
             prenom,
             fonctionne,
@@ -38,9 +37,10 @@ exports.createClient = (req, res) => {
             reservation_date,
             description,
             travail,
-            assigne_a
+            assigne_a,
+            reminder_datetime
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.query(
@@ -60,77 +60,84 @@ exports.createClient = (req, res) => {
             reservation_date,
             description,
             travail,
-            assigne_a
+            assigne_a,
+            reminder_datetime
         ],
         (err, result) => {
-
             if (err) {
-    console.error(err);
-    return res.status(500).json({
-        success: false,
-        message: err.message
-    });
-}
+                console.error(err);
+                return res.status(500).json({
+                    success: false,
+                    message: err.message
+                });
+            }
 
-        const newClientId = result.insertId;
+            const newClientId = result.insertId;
 
-        const reminderSql = `
-        INSERT INTO reminders (
-            client_id,
-            nom,
-            prenom,
-            telephone,
-            whatsapp,
-            facebook,
-            instagram,
-            snapchat,
-            tiktok,
-            reservation_de_quoi,
-            reservation_date
-        )
-        SELECT
-            id,
-            nom,
-            prenom,
-            telephone,
-            whatsapp,
-            facebook,
-            instagram,
-            snapchat,
-            tiktok,
-            reservation_de_quoi,
-            reservation_date
-        FROM clients
-        WHERE id = ?
-        AND reservation = 'Oui'
-        AND reservation_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-        `;
+            if (reservation === "Oui" && reservation_date) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
 
-        db.query(reminderSql, [newClientId], (reminderErr, reminderResult) => {
+                if (reservation_date === tomorrowDate) {
+                    const reminderSql = `
+                        INSERT INTO reminders (
+                            client_id,
+                            nom,
+                            prenom,
+                            telephone,
+                            whatsapp,
+                            facebook,
+                            instagram,
+                            snapchat,
+                            tiktok,
+                            reservation_de_quoi,
+                            reservation_date
+                        )
+                        SELECT
+                            id,
+                            nom,
+                            prenom,
+                            telephone,
+                            whatsapp,
+                            facebook,
+                            instagram,
+                            snapchat,
+                            tiktok,
+                            reservation_de_quoi,
+                            reservation_date
+                        FROM clients
+                        WHERE id = ?
+                          AND reservation_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+                    `;
 
-    if (reminderErr) {
-        console.error(reminderErr);
+                    return db.query(reminderSql, [newClientId], (reminderErr, reminderResult) => {
+                        if (reminderErr) {
+                            console.error(reminderErr);
+                            return res.status(500).json({
+                                success: false,
+                                message: reminderErr.message
+                            });
+                        }
 
-        return res.status(500).json({
-            success: false,
-            message: reminderErr.message
-        });
-    }
+                        console.log("Inserted reservation reminders:", reminderResult.affectedRows);
 
-    console.log("Inserted reminders:", reminderResult.affectedRows);
+                        return res.status(201).json({
+                            success: true,
+                            message: "Client ajouté avec succès.",
+                            id: newClientId
+                        });
+                    });
+                }
+            }
 
-    res.status(201).json({
-        success: true,
-        message: "Client ajouté avec succès.",
-        id: newClientId
-    });
-
-});
-
-
+            return res.status(201).json({
+                success: true,
+                message: "Client ajouté avec succès.",
+                id: newClientId
+            });
         }
     );
-
 };
 
 exports.getClients = (req, res) => {
@@ -439,6 +446,33 @@ exports.dismissReminder = (req, res) => {
         console.log("Rows deleted:", result.affectedRows);
 
         res.json({ success: true });
+
+    });
+
+};
+
+exports.setReminder = (req, res) => {
+
+    const { id } = req.params;
+    const { reminder_datetime } = req.body;
+
+    const sql = `
+        UPDATE clients
+        SET reminder_datetime = ?
+        WHERE id = ?
+    `;
+
+    db.query(sql, [reminder_datetime, id], (err, result) => {
+
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: err.message });
+        }
+
+        res.json({
+            success: true,
+            message: "Rappel enregistré."
+        });
 
     });
 
