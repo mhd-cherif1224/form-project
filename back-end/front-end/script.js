@@ -25,6 +25,10 @@ const facebookCheck = document.getElementById("facebookCheck");
 const instagramCheck = document.getElementById("instagramCheck");
 const snapCheck = document.getElementById("snapCheck");
 const tiktokCheck = document.getElementById("tiktokCheck");
+const reservationCheck = document.getElementById("reservCheck");
+const reservationDeQuoi = document.getElementById("reservDeQuoi");
+const reservationQuand = document.getElementById("reservQuand");
+
 
 // ==============================
 // Global Variables
@@ -68,6 +72,9 @@ function displayClients(clientList) {
             <td>${client.instagram ?? "-"}</td>
             <td>${client.snapchat ?? "-"}</td>
             <td>${client.tiktok ?? "-"}</td>
+            <td>${client.reservation ?? "Non"}</td>
+            <td>${client.reservation_de_quoi ?? "-"}</td>
+            <td>${client.reservation_date ?? "-"}</td>
             <td>${client.travail}</td>
             <td>${client.assigne_a}</td>
         </tr>
@@ -162,6 +169,7 @@ function resetForm() {
     instagramCheck.checked = false;
     snapCheck.checked = false;
     tiktokCheck.checked = false;
+    reservationCheck.checked = false;
 
     document.querySelectorAll("input[name='worker']").forEach(worker => {
         worker.checked = false;
@@ -271,6 +279,12 @@ function openClient(client) {
         document.getElementById("tiktokField").style.display = "block";
         document.getElementById("tiktok").value = client.tiktok;
     }
+    if (client.reservation === "oui") {
+    reservationCheck.checked = true;
+    document.getElementById("reservationFields").style.display = "block";
+    reservationDeQuoi.value = client.reservation_de_quoi ?? "";
+    reservationQuand.value = client.reservation_date ?? "";
+}
     if (travail.value === "fini") {
         description.required = false;
     } else {
@@ -327,6 +341,28 @@ toggle("instagramCheck", "instagramField");
 toggle("snapCheck", "snapField");
 toggle("tiktokCheck", "tiktokField");
 
+
+reservationCheck.addEventListener("change", () => {
+
+    const fields = document.getElementById("reservationFields");
+
+    if (reservationCheck.checked) {
+
+        fields.style.display = "block";
+        reservationDeQuoi.required = false;
+        reservationQuand.required = false;
+
+    } else {
+
+        fields.style.display = "none";
+        reservationDeQuoi.required = false;
+        reservationQuand.required = false;
+        reservationDeQuoi.value = "";
+        reservationQuand.value = "";
+
+    }
+
+});
 // ==============================
 // Description Validation
 // ==============================
@@ -358,9 +394,7 @@ function getClientData() {
     return {
 
         nom: document.getElementById("nom").value.trim(),
-
         prenom: document.getElementById("prenom").value.trim(),
-
         fonctionne: document.getElementById("fonctionne").value.trim(),
 
         telephone: phoneCheck.checked
@@ -387,6 +421,15 @@ function getClientData() {
             ? document.getElementById("tiktok").value.trim()
             : null,
 
+        reservation: reservationCheck.checked ? "Oui" : "Non",
+
+        reservation_de_quoi: reservationCheck.checked
+            ? reservationDeQuoi.value.trim()
+            : "",
+
+        reservation_date: reservationCheck.checked && reservationQuand.value
+    ? reservationQuand.value
+    : null,
         description: description.value.trim(),
 
         travail: travail.value,

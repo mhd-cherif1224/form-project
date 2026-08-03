@@ -161,6 +161,29 @@
 
         </div>
 
+        <!-- reservation de quelque chose -->
+
+        <div class="group">
+            <label>
+                <input
+                    type="checkbox"
+                    id="reservCheck">
+                <h3>Réservation</h3>
+            </label>
+
+            <div id="reservationFields" class="hidden">
+                <input
+                    type="text"
+                    id="reservDeQuoi"
+                    name="reservation_de_quoi"
+                    placeholder="Billet d'avion, hôtel, etc.">
+
+                <input
+                    type="date"
+                    id="reservQuand"
+                    name="reservation_date">
+            </div>
+        </div>
         <!-- Description -->
         <div class="group">
             <label for="description">Description *</label>
@@ -285,6 +308,9 @@
                 <th>Instagram</th>
                 <th>Snapchat</th>
                 <th>TikTok</th>
+                <th>Reservation</th>
+                <th>Reservation de quoi</th>
+                <th>Reservation quand</th>
                 <th>Travail</th>
                 <th>Assigné à</th>
 

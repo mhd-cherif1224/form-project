@@ -3,19 +3,22 @@ const db = require("../config/db");
 exports.createClient = (req, res) => {
     console.log("req.body:", req.body);
     const {
-    nom,
-    prenom,
-    fonctionne,
-    telephone,
-    whatsapp,
-    facebook,
-    instagram,
-    snapchat,
-    tiktok,
-    description,
-    travail,
-    assigne_a
-} = req.body;
+        nom,
+        prenom,
+        fonctionne,
+        telephone,
+        whatsapp,
+        facebook,
+        instagram,
+        snapchat,
+        tiktok,
+        reservation,
+        reservation_de_quoi,
+        reservation_date,
+        description,
+        travail,
+        assigne_a
+    } = req.body;
 
     const sql = `
         INSERT INTO clients
@@ -29,11 +32,14 @@ exports.createClient = (req, res) => {
             instagram,
             snapchat,
             tiktok,
+            reservation,
+            reservation_de_quoi,
+            reservation_date,
             description,
             travail,
             assigne_a
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.query(
@@ -48,6 +54,9 @@ exports.createClient = (req, res) => {
             instagram,
             snapchat,
             tiktok,
+            reservation,
+            reservation_de_quoi,
+            reservation_date,
             description,
             travail,
             assigne_a
@@ -147,6 +156,9 @@ exports.updateClient = (req, res) => {
         instagram,
         snapchat,
         tiktok,
+        reservation,
+        reservation_de_quoi,
+        reservation_date,
         description,
         travail,
         assigne_a
@@ -164,6 +176,9 @@ exports.updateClient = (req, res) => {
             instagram = ?,
             snapchat = ?,
             tiktok = ?,
+            reservation = ?,
+            reservation_de_quoi = ?,
+            reservation_date = ?,
             description = ?,
             travail = ?,
             assigne_a = ?
@@ -182,6 +197,9 @@ exports.updateClient = (req, res) => {
             instagram,
             snapchat,
             tiktok,
+            reservation,
+            reservation_de_quoi,
+            reservation_date,
             description,
             travail,
             assigne_a,
@@ -214,7 +232,6 @@ exports.updateClient = (req, res) => {
     );
 
 };
-
 exports.checkClient = (req, res) => {
 
     const {
