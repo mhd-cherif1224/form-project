@@ -2,14 +2,17 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Arial,Helvetica,sans-serif;
+    font-family:"Segoe UI", Roboto, Arial, Helvetica, sans-serif;
 }
 
 body{
 
     margin:0;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:"Segoe UI", Roboto, Arial, Helvetica, sans-serif;
     background:#f4f7fc;
+    color:#1f2430;
+    line-height:1.5;
+    
 
 }
 
@@ -20,45 +23,69 @@ body{
 
 #listClientSection{
 
-    margin-left: 10%;
+    
     margin-right: 10%;
     
 }
-#clientsTable{
-    background: #fff;;
 
+#clientsTable{
+    background: #fff;
 }
 
 #searchInput{
-    padding: 10px;
+    padding: 14px 18px;
     width: 300px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    
+    border: 1px solid #e2e5eb;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #f4f7fc;
+    transition: border-color .15s, background .15s;
+}
+
+#searchInput:focus{
+    outline: none;
+    border-color: #2563eb;
+    background: #fff;
 }
 
 .container{
 
-    width:700px;
+    width:720px;
     background:white;
-    border-radius:15px;
-    padding:35px;
-    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    border-radius:18px;
+    padding:40px;
+    border:1px solid #e2e5eb;
+    box-shadow:0 2px 8px rgba(20,25,40,.06);
 
 }
 
 h1{
 
-    color:#2563eb;
-    margin-bottom:25px;
+    color:#1f2430;
+    font-size:24px;
+    margin-bottom:6px;
 
 }
 
 h3{
 
-    margin:25px 0 15px;
-    color:#444;
+    margin:32px 0 16px;
+    padding-top:24px;
+    border-top:1px solid #e2e5eb;
+    color:#6b7280;
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    display:flex;
+    align-items:center;
+    gap:8px;
 
+}
+
+h3:first-of-type{
+    border-top:none;
+    padding-top:0;
 }
 
 .group{
@@ -71,8 +98,9 @@ h3{
 
 label{
 
-    margin-bottom:8px;
+    margin-bottom:7px;
     font-weight:600;
+    font-size:14.5px;
 
 }
 
@@ -81,10 +109,23 @@ textarea,
 select{
 
     width:100%;
-    padding:12px;
-    border:1px solid #d7d7d7;
-    border-radius:8px;
-    font-size:15px;
+    padding:15px 16px;
+    border:1.5px solid #e2e5eb;
+    border-radius:12px;
+    font-size:15.5px;
+    color:#1f2430;
+    background:#fff;
+    transition:border-color .15s, box-shadow .15s;
+
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px #eef2ff;
 
 }
 
@@ -94,10 +135,97 @@ textarea{
 
 }
 
+/* ==============================
+   Checkboxes -> big modern toggle rows
+============================== */
+
 .checks{
 
-    display:grid;
-    gap:10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+
+}
+
+.checks > label,
+.group > label:has(input[type="checkbox"]){
+
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px 18px;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:15.5px;
+    background:#f9fafc;
+    border:1.5px solid #e2e5eb;
+    transition:background .15s, border-color .15s;
+    margin-bottom:0;
+
+}
+
+.checks > label:hover,
+.group > label:has(input[type="checkbox"]):hover{
+    background:#eef2ff;
+    border-color:#c7d5fc;
+}
+
+.checks > label:has(input:checked),
+.group > label:has(input:checked){
+    background:#eef2ff;
+    border-color:#2563eb;
+}
+
+/* the actual checkbox, enlarged */
+.checks input[type="checkbox"],
+.group > label > input[type="checkbox"]{
+
+    appearance:none;
+    -webkit-appearance:none;
+    width:26px;
+    height:26px;
+    border:2px solid #d7dbe3;
+    border-radius:8px;
+    cursor:pointer;
+    flex-shrink:0;
+    position:relative;
+    background:#fff;
+    transition:.15s;
+
+}
+
+.checks input[type="checkbox"]:checked,
+.group > label > input[type="checkbox"]:checked{
+
+    background:#2563eb;
+    border-color:#2563eb;
+
+}
+
+.checks input[type="checkbox"]:checked::after,
+.group > label > input[type="checkbox"]:checked::after{
+
+    content:"";
+    position:absolute;
+    left:8px;
+    top:3px;
+    width:6px;
+    height:12px;
+    border:solid white;
+    border-width:0 3px 3px 0;
+    transform:rotate(45deg);
+
+}
+
+/* icons inside labels */
+.checks ion-icon,
+.group > label > ion-icon,
+.tab ion-icon{
+
+    font-size:20px;
+    color:#2563eb;
+    flex-shrink:0;
 
 }
 
@@ -108,10 +236,37 @@ textarea{
 
 }
 
+.checks > div:not(.hidden),
+.group > div:not(.hidden){
+
+    padding:6px 18px 16px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+
+}
+
+.group > label > h3{
+
+    margin:0;
+    padding:0;
+    border:none;
+    text-transform:none;
+    letter-spacing:0;
+    font-size:16px;
+    font-weight:700;
+    color:#1f2430;
+
+}
+
+/* ==============================
+   Workers
+============================== */
+
 .workers{
 
     display:flex;
-    gap:15px;
+    gap:12px;
     flex-wrap:wrap;
 
 }
@@ -124,33 +279,52 @@ textarea{
 
 .worker-btn{
 
-    padding:12px 18px;
-    border:2px solid #2563eb;
-    border-radius:30px;
+    padding:14px 22px;
+    border:2px solid #e2e5eb;
+    border-radius:14px;
     cursor:pointer;
-    transition:.25s;
-    color:#2563eb;
-    font-weight:bold;
+    transition:.15s;
+    color:#6b7280;
+    font-weight:700;
+    font-size:14.5px;
+    background:#fff;
 
+}
+
+.worker-btn:hover{
+    border-color:#2563eb;
+    color:#2563eb;
 }
 
 .workers input:checked + .worker-btn{
 
     background:#2563eb;
     color:white;
+    border-color:#2563eb;
+    box-shadow:0 4px 12px rgba(37,99,235,.25);
 
 }
+
+/* ==============================
+   Button
+============================== */
 
 button{
 
     width:100%;
-    padding:15px;
+    padding:17px;
     border:none;
-    border-radius:10px;
+    border-radius:14px;
     background:#2563eb;
     color:white;
     font-size:16px;
+    font-weight:700;
     cursor:pointer;
+    transition:background .15s, transform .1s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
 
 }
 
@@ -160,8 +334,13 @@ button:hover{
 
 }
 
+button:active{
+    transform:scale(.99);
+}
 
-/* sec2 */
+/* ==============================
+   Header
+============================== */
 
 header{
 
@@ -169,26 +348,46 @@ header{
     justify-content:space-around;
     align-items:center;
     margin-bottom:35px;
+    padding:20px 32px;
+    background:#fff;
+    border-bottom:1px solid #e2e5eb;
+
+}
+
+header h2{
+
+    font-size:20px;
+    font-weight:700;
 
 }
 
 nav{
 
     display:flex;
-    gap:15px;
+    gap:10px;
 
 }
 
 .tab{
 
     border:none;
-    background:#e8eefc;
-    color:#2563eb;
-    padding:8 12px;
-    border-radius:8px;
+    background:#f4f7fc;
+    color:#6b7280;
+    padding:12px 20px;
+    border-radius:12px;
     cursor:pointer;
-    font-weight:bold;
+    font-weight:700;
+    font-size:14.5px;
+    transition:background .15s, color .15s;
+    display:flex;
+    align-items:center;
+    gap:8px;
 
+}
+
+.tab:hover{
+    background:#eef2ff;
+    color:#2563eb;
 }
 
 .tab.active{
@@ -198,50 +397,90 @@ nav{
 
 }
 
-.hidden{
-
-    display:none;
-
+.tab.active ion-icon{
+    color:white;
 }
+
+/* ==============================
+   Table
+============================== */
 
 table{
 
     width:100%;
     border-collapse:collapse;
+    background:#fff;
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid #e2e5eb;
 
 }
 
 th,
 td{
 
-    border-bottom:1px solid #ddd;
-    padding:14px;
+    border-bottom:1px solid #e2e5eb;
+    padding:16px 18px;
     text-align:left;
+    font-size:14.5px;
+    white-space:nowrap;
 
 }
 
 th{
 
-    background:#2563eb;
-    color:white;
+    background:#f4f7fc;
+    color:#6b7280;
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:.05em;
 
+}
+
+tbody tr{
+    transition:background .1s;
+    cursor:pointer;
+}
+
+tbody tr:hover{
+    background:#eef2ff;
+}
+
+tbody tr:last-child td{
+    border-bottom:none;
 }
 
 #paginationControls {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    gap: 18px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    font-size:14.5px;
+    color:#6b7280;
 }
 
 #paginationControls button {
     width: auto;
-    padding: 8px 16px;
+    padding: 11px 20px;
+    border:1.5px solid #e2e5eb;
+    border-radius:12px;
+    background:#fff;
+    color:#1f2430;
+    font-weight:700;
+    font-size:14px;
+    transition:.15s;
+}
+
+#paginationControls button:hover:not(:disabled){
+    border-color:#2563eb;
+    color:#2563eb;
+    background:#eef2ff;
 }
 
 #paginationControls button:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
 }

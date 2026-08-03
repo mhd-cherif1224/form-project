@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Form</title>
     <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
 <header class="header">
@@ -16,8 +18,14 @@
     placeholder="Rechercher un client..."
     >
     <nav>
-        <button class="tab active" id="addTab">Nouveau Client</button>
-        <button class="tab" id="listTab">Liste des Clients</button>
+        <button class="tab active" id="addTab">
+            <ion-icon name="person-add-outline"></ion-icon>
+            Nouveau Client
+        </button>
+        <button class="tab" id="listTab">
+            <ion-icon name="list-outline"></ion-icon>
+            Liste des Clients
+        </button>
     </nav>
 
 </header>
@@ -58,7 +66,7 @@
         >
     </div>
 
-        <h3>Moyens de contact</h3>
+        <h3><ion-icon name="share-social-outline"></ion-icon> Moyens de contact</h3>
 
         <div class="checks">
 
@@ -67,6 +75,7 @@
                 <input
                     type="checkbox"
                     id="phoneCheck">
+                <ion-icon name="call-outline"></ion-icon>
                 Numéro
             </label>
 
@@ -84,6 +93,7 @@
                 <input
                     type="checkbox"
                     id="whatsappCheck">
+                <ion-icon name="logo-whatsapp"></ion-icon>
                 WhatsApp
             </label>
 
@@ -101,6 +111,7 @@
                 <input
                     type="checkbox"
                     id="facebookCheck">
+                <ion-icon name="logo-facebook"></ion-icon>
                 Facebook
             </label>
 
@@ -117,6 +128,7 @@
                 <input
                     type="checkbox"
                     id="instagramCheck">
+                <ion-icon name="logo-instagram"></ion-icon>
                 Instagram
             </label>
 
@@ -133,6 +145,7 @@
                 <input
                     type="checkbox"
                     id="snapCheck">
+                <ion-icon name="logo-snapchat"></ion-icon>
                 Snapchat
             </label>
 
@@ -148,6 +161,7 @@
                 <input
                     type="checkbox"
                     id="tiktokCheck">
+                <ion-icon name="logo-tiktok"></ion-icon>
                 TikTok
             </label>
 
@@ -168,6 +182,7 @@
                 <input
                     type="checkbox"
                     id="reservCheck">
+                <ion-icon name="calendar-outline"></ion-icon>
                 <h3>Réservation</h3>
             </label>
 
@@ -282,6 +297,7 @@
         </div>
 
         <button type="submit">
+            <ion-icon name="save-outline"></ion-icon>
             Enregistrer
         </button>
 
@@ -291,7 +307,7 @@
 </section>
 <section id="listClientSection" class="hidden">
 
-    <h2>Liste des Clients</h2>
+    <h2><ion-icon name="people-outline"></ion-icon> Liste des Clients</h2>
 
     <table>
 
@@ -330,7 +346,6 @@
 </section>
 
 <script src="script.js"></script>
-</script>
 
 </body>
 </html>
