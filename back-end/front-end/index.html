@@ -12,6 +12,17 @@
 <header class="header">
 
     <h2>Gestion des Clients</h2>
+
+    <div id="notifBell" class="notif-bell">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <span id="notifBadge" class="notif-badge hidden">0</span>
+    </div>
+
+    <div id="notifDropdown" class="notif-dropdown hidden">
+        <h4>Rappels — réservations demain</h4>
+        <div id="notifList"></div>
+    </div>
+
     <input
     type="text"
     id="searchInput"

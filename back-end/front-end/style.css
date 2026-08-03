@@ -484,3 +484,98 @@ tbody tr:last-child td{
     opacity: 0.4;
     cursor: not-allowed;
 }
+
+.notif-bell{
+
+    position: relative;
+    cursor: pointer;
+    font-size: 24px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    transition: color .15s;
+
+}
+
+.notif-bell:hover{
+    color: #2563eb;
+}
+
+.notif-badge{
+
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: #dc2626;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
+
+}
+
+.notif-dropdown{
+
+    position: absolute;
+    top: 70px;
+    right: 32px;
+    width: 340px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #e2e5eb;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(20,25,40,.12);
+    padding: 16px;
+    z-index: 100;
+
+}
+
+.notif-dropdown h4{
+
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #6b7280;
+    margin-bottom: 12px;
+
+}
+
+.notif-item{
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f9fafc;
+    margin-bottom: 8px;
+    font-size: 14px;
+
+}
+
+.notif-item strong{
+    font-size: 14.5px;
+}
+
+.notif-item span{
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.notif-contact{
+    display: flex;
+    gap: 12px;
+    margin-top: 2px;
+}
+
+.notif-empty{
+    color: #6b7280;
+    font-size: 13.5px;
+    text-align: center;
+    padding: 20px 0;
+}

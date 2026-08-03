@@ -470,6 +470,96 @@ function validateForm() {
     return true;
 
 }
+
+
+// ==============================
+// Reminders / Notifications
+// ==============================
+
+const notifBell = document.getElementById("notifBell");
+const notifBadge = document.getElementById("notifBadge");
+const notifDropdown = document.getElementById("notifDropdown");
+const notifList = document.getElementById("notifList");
+
+let lastReminderIds = new Set();
+
+async function checkReminders() {
+
+    try {
+
+        const response = await fetch("/api/clients/reminders");
+        const reminders = await response.json();
+
+        notifBadge.textContent = reminders.length;
+        notifBadge.classList.toggle("hidden", reminders.length === 0);
+
+        if (reminders.length === 0) {
+            notifList.innerHTML = `<p class="notif-empty">Aucun rappel pour l'instant.</p>`;
+            return;
+        }
+
+        notifList.innerHTML = reminders.map(client => `
+            <div class="notif-item">
+                <strong>${client.nom} ${client.prenom}</strong>
+                <span>${client.reservation_de_quoi ?? "Réservation"} — ${client.reservation_date}</span>
+                <span class="notif-contact">
+                    ${client.telephone ? `📞 ${client.telephone}` : ""}
+                    ${client.whatsapp ? `💬 ${client.whatsapp}` : ""}
+                </span>
+            </div>
+        `).join("");
+
+        // Trigger a real OS notification for NEW reminders only (not ones already seen)
+        const currentIds = new Set(reminders.map(c => c.id));
+
+        reminders.forEach(client => {
+            if (!lastReminderIds.has(client.id)) {
+                triggerBrowserNotification(client);
+            }
+        });
+
+        lastReminderIds = currentIds;
+
+    } catch (error) {
+        console.error("Erreur lors du chargement des rappels:", error);
+    }
+
+}
+
+function triggerBrowserNotification(client) {
+
+    if (!("Notification" in window)) return;
+
+    if (Notification.permission === "granted") {
+
+        new Notification("Rappel de réservation", {
+            body: `${client.nom} ${client.prenom} — ${client.reservation_de_quoi ?? "réservation"} demain (${client.reservation_date})`
+        });
+
+    }
+
+}
+
+// Ask for notification permission once, on page load
+if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+}
+
+// Toggle dropdown on bell click
+notifBell.addEventListener("click", () => {
+    notifDropdown.classList.toggle("hidden");
+});
+
+// Close dropdown if clicking outside
+document.addEventListener("click", (e) => {
+    if (!notifBell.contains(e.target) && !notifDropdown.contains(e.target)) {
+        notifDropdown.classList.add("hidden");
+    }
+});
+
+// Check immediately on load, then every 5 minutes
+checkReminders();
+setInterval(checkReminders, 5 * 60 * 1000);
 // ==============================
 // Submit Form
 // ==============================
