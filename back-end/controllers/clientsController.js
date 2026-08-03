@@ -65,18 +65,67 @@ exports.createClient = (req, res) => {
         (err, result) => {
 
             if (err) {
-                console.error(err);
-                return res.status(500).json({
-                    success: false,
-                    message: err.message
-                });
-            }
+    console.error(err);
+    return res.status(500).json({
+        success: false,
+        message: err.message
+    });
+}
 
-            res.status(201).json({
-                success: true,
-                message: "Client ajouté avec succès.",
-                id: result.insertId
-            });
+        const newClientId = result.insertId;
+
+        const reminderSql = `
+        INSERT INTO reminders (
+            client_id,
+            nom,
+            prenom,
+            telephone,
+            whatsapp,
+            facebook,
+            instagram,
+            snapchat,
+            tiktok,
+            reservation_de_quoi,
+            reservation_date
+        )
+        SELECT
+            id,
+            nom,
+            prenom,
+            telephone,
+            whatsapp,
+            facebook,
+            instagram,
+            snapchat,
+            tiktok,
+            reservation_de_quoi,
+            reservation_date
+        FROM clients
+        WHERE id = ?
+        AND reservation = 'Oui'
+        AND reservation_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        `;
+
+        db.query(reminderSql, [newClientId], (reminderErr, reminderResult) => {
+
+    if (reminderErr) {
+        console.error(reminderErr);
+
+        return res.status(500).json({
+            success: false,
+            message: reminderErr.message
+        });
+    }
+
+    console.log("Inserted reminders:", reminderResult.affectedRows);
+
+    res.status(201).json({
+        success: true,
+        message: "Client ajouté avec succès.",
+        id: newClientId
+    });
+
+});
 
 
         }
