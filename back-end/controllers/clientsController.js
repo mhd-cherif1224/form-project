@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const generateReminders = require("../jobs/generateReminders");
 
 exports.createClient = (req, res) => {
     console.log("req.body:", req.body);
@@ -76,6 +77,7 @@ exports.createClient = (req, res) => {
                 message: "Client ajouté avec succès.",
                 id: result.insertId
             });
+
 
         }
     );
@@ -353,15 +355,10 @@ exports.checkClient = (req, res) => {
 
 };
 
+
 exports.getReminders = (req, res) => {
 
-    const sql = `
-        SELECT id, nom, prenom, telephone, whatsapp, reservation_de_quoi, reservation_date
-        FROM clients
-        WHERE reservation = 'Oui'
-          AND reservation_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-        ORDER BY nom ASC
-    `;
+    const sql = `SELECT * FROM reminders ORDER BY nom ASC`;
 
     db.query(sql, (err, result) => {
 
@@ -371,6 +368,28 @@ exports.getReminders = (req, res) => {
         }
 
         res.json(result);
+
+    });
+
+};
+
+exports.dismissReminder = (req, res) => {
+
+    const { id } = req.params;
+    console.log("Attempting to delete reminder id:", id);
+
+    const sql = `DELETE FROM reminders WHERE id = ?`;
+
+    db.query(sql, [id], (err, result) => {
+
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Erreur serveur." });
+        }
+
+        console.log("Rows deleted:", result.affectedRows);
+
+        res.json({ success: true });
 
     });
 

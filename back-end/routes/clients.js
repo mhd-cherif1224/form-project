@@ -6,9 +6,11 @@ const {
     getClients,
     updateClient,
     checkClient,
-    getReminders
+    getReminders,
+    dismissReminder
 } = require("../controllers/clientsController");
 
+router.delete("/reminders/:id", dismissReminder);
 router.get("/reminders", getReminders);
 router.get("/check", checkClient);
 router.get("/", getClients);

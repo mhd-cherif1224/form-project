@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -7,6 +8,8 @@ const app = express();
 
 // Connect to MySQL
 require("./config/db");
+
+require("./jobs/generateReminders");
 
 // Middlewares
 app.use(cors());
@@ -24,6 +27,8 @@ app.use("/api/clients", clientRoutes);
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "front-end/index.html"));
 });
+
+
 
 // Start server
 const PORT = process.env.PORT || 3000;

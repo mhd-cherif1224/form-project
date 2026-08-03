@@ -579,3 +579,17 @@ tbody tr:last-child td{
     text-align: center;
     padding: 20px 0;
 }
+
+.notif-item{
+    cursor: pointer;
+    transition: opacity .2s, transform .2s;
+}
+
+.notif-item:hover{
+    background: #eef2ff;
+}
+
+.notif-item-removing{
+    opacity: 0;
+    transform: translateX(20px);
+}

@@ -41,6 +41,22 @@ let currentPage = 1;
 let currentSearch = "";
 const PAGE_SIZE = 50;
 
+//helper funcs 
+
+function formatDate(dateString) {
+
+    if (!dateString) return "-";
+
+    const date = new Date(dateString);
+
+    const jj = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+
+    return `${jj}.${mm}.${yyyy}`;
+
+}
+
 // ==============================
 // Display Clients
 // ==============================
@@ -74,7 +90,7 @@ function displayClients(clientList) {
             <td>${client.tiktok ?? "-"}</td>
             <td>${client.reservation ?? "Non"}</td>
             <td>${client.reservation_de_quoi ?? "-"}</td>
-            <td>${client.reservation_date ?? "-"}</td>
+            <td>${formatDate(client.reservation_date)}</td>
             <td>${client.travail}</td>
             <td>${client.assigne_a}</td>
         </tr>
@@ -475,7 +491,7 @@ function validateForm() {
 // ==============================
 // Reminders / Notifications
 // ==============================
-
+let dismissedReminderIds = new Set();
 const notifBell = document.getElementById("notifBell");
 const notifBadge = document.getElementById("notifBadge");
 const notifDropdown = document.getElementById("notifDropdown");
@@ -498,23 +514,58 @@ async function checkReminders() {
             return;
         }
 
-        notifList.innerHTML = reminders.map(client => `
-            <div class="notif-item">
-                <strong>${client.nom} ${client.prenom}</strong>
-                <span>${client.reservation_de_quoi ?? "Réservation"} — ${client.reservation_date}</span>
+        notifList.innerHTML = reminders.map(reminder => `
+            <div class="notif-item" data-id="${reminder.id}">
+                <strong>${reminder.nom} ${reminder.prenom}</strong>
+                <span>${reminder.reservation_de_quoi ?? "Réservation"} — ${formatDate(reminder.reservation_date)}</span>
                 <span class="notif-contact">
-                    ${client.telephone ? `📞 ${client.telephone}` : ""}
-                    ${client.whatsapp ? `💬 ${client.whatsapp}` : ""}
+                    ${reminder.telephone ? `📞 ${reminder.telephone}` : ""}
+                    ${reminder.whatsapp ? `💬 ${reminder.whatsapp}` : ""}
                 </span>
             </div>
         `).join("");
 
-        // Trigger a real OS notification for NEW reminders only (not ones already seen)
-        const currentIds = new Set(reminders.map(c => c.id));
+        // Attach double-click dismissal to each item
+        document.querySelectorAll(".notif-item").forEach(item => {
+            item.addEventListener("dblclick", async () => {
 
-        reminders.forEach(client => {
-            if (!lastReminderIds.has(client.id)) {
-                triggerBrowserNotification(client);
+                const id = Number(item.dataset.id);
+
+                try {
+
+                    await fetch(`/api/clients/reminders/${id}`, {
+                        method: "DELETE"
+                    });
+
+                } catch (error) {
+                    console.error("Erreur lors de la suppression du rappel:", error);
+                    return; // don't remove visually if the delete failed
+                }
+
+                item.classList.add("notif-item-removing");
+
+                setTimeout(() => {
+                    item.remove();
+
+                    const remaining = notifList.querySelectorAll(".notif-item").length;
+                    notifBadge.textContent = remaining;
+                    notifBadge.classList.toggle("hidden", remaining === 0);
+
+                    if (remaining === 0) {
+                        notifList.innerHTML = `<p class="notif-empty">Aucun rappel pour l'instant.</p>`;
+                    }
+
+                }, 200);
+
+            });
+        });
+
+        // Trigger OS notification only for genuinely new reminders
+        const currentIds = new Set(reminders.map(r => r.id));
+
+        reminders.forEach(reminder => {
+            if (!lastReminderIds.has(reminder.id)) {
+                triggerBrowserNotification(reminder);
             }
         });
 
@@ -526,14 +577,14 @@ async function checkReminders() {
 
 }
 
-function triggerBrowserNotification(client) {
+function triggerBrowserNotification(reminder) {
 
     if (!("Notification" in window)) return;
 
     if (Notification.permission === "granted") {
 
         new Notification("Rappel de réservation", {
-            body: `${client.nom} ${client.prenom} — ${client.reservation_de_quoi ?? "réservation"} demain (${client.reservation_date})`
+            body: `${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"} demain (${formatDate(reminder.reservation_date)})`
         });
 
     }
