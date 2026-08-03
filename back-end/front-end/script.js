@@ -519,8 +519,12 @@ async function checkReminders() {
                 <strong>${reminder.nom} ${reminder.prenom}</strong>
                 <span>${reminder.reservation_de_quoi ?? "Réservation"} — ${formatDate(reminder.reservation_date)}</span>
                 <span class="notif-contact">
-                    ${reminder.telephone ? `📞 ${reminder.telephone}` : ""}
-                    ${reminder.whatsapp ? `💬 ${reminder.whatsapp}` : ""}
+                    ${reminder.telephone ? `<ion-icon name="call-outline"></ion-icon> ${reminder.telephone}<br>` : ""}
+                    ${reminder.whatsapp ? `<ion-icon name="logo-whatsapp"></ion-icon> ${reminder.whatsapp}<br>` : ""}
+                    ${reminder.facebook ? `<ion-icon name="logo-facebook"></ion-icon> ${reminder.facebook}<br>` : ""}
+                    ${reminder.instagram ? `<ion-icon name="logo-instagram"></ion-icon> ${reminder.instagram}<br>` : ""}
+                    ${reminder.snapchat ? `<ion-icon name="logo-snapchat"></ion-icon> ${reminder.snapchat}<br>` : ""}
+                    ${reminder.tiktok ? `<ion-icon name="logo-tiktok"></ion-icon> ${reminder.tiktok}` : ""}
                 </span>
             </div>
         `).join("");
