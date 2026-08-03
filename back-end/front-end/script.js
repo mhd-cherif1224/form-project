@@ -158,9 +158,16 @@ function resetForm() {
         "facebookField",
         "instagramField",
         "snapField",
-        "tiktokField"
+        "tiktokField",
+        "reservationFields"
     ].forEach(id => {
-        document.getElementById(id).style.display = "none";
+        const field = document.getElementById(id);
+        field.style.display = "none";
+
+        // clear required on every input inside, not just hide it
+        field.querySelectorAll("input").forEach(input => {
+            input.required = false;
+        });
     });
 
     phoneCheck.checked = false;
