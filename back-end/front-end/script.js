@@ -626,24 +626,123 @@ async function checkReminders() {
 
 }
 
+function playNotificationSound() {
+    try {
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+
+        oscillator.type = "sine";
+        oscillator.frequency.value = 880;
+        gain.gain.value = 0.15;
+
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+
+        oscillator.start();
+        oscillator.stop(context.currentTime + 0.15);
+    } catch (error) {
+        console.warn("Impossible de jouer le son de notification", error);
+    }
+}
+
+let originalDocumentTitle = document.title;
+let flashTitleTimer = null;
+
+function flashDocumentTitle(message) {
+    if (flashTitleTimer) {
+        clearInterval(flashTitleTimer);
+    }
+
+    let visible = true;
+    flashTitleTimer = setInterval(() => {
+        document.title = visible ? message : originalDocumentTitle;
+        visible = !visible;
+    }, 1000);
+
+    setTimeout(() => {
+        clearInterval(flashTitleTimer);
+        document.title = originalDocumentTitle;
+        flashTitleTimer = null;
+    }, 10000);
+}
+
+function showInPageAlert(reminder) {
+    const alert = document.createElement("div");
+    alert.className = "reminder-alert-banner";
+    alert.innerHTML = `
+        <strong>Rappel :</strong> ${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"}<br>
+        ${formatDate(reminder.reservation_date)} à 09:00
+        <button class="reminder-alert-close">OK</button>
+    `;
+
+    alert.style.position = "fixed";
+    alert.style.left = "16px";
+    alert.style.right = "16px";
+    alert.style.top = "16px";
+    alert.style.zIndex = "9999";
+    alert.style.padding = "16px";
+    alert.style.background = "#212121";
+    alert.style.color = "#fff";
+    alert.style.borderRadius = "8px";
+    alert.style.boxShadow = "0 10px 30px rgba(0,0,0,0.3)";
+    alert.style.fontSize = "0.95rem";
+    alert.style.display = "flex";
+    alert.style.justifyContent = "space-between";
+    alert.style.alignItems = "center";
+
+    const closeButton = alert.querySelector(".reminder-alert-close");
+    closeButton.style.marginLeft = "16px";
+    closeButton.style.border = "none";
+    closeButton.style.padding = "8px 12px";
+    closeButton.style.background = "#fff";
+    closeButton.style.color = "#000";
+    closeButton.style.borderRadius = "4px";
+    closeButton.style.cursor = "pointer";
+
+    closeButton.addEventListener("click", () => {
+        alert.remove();
+    });
+
+    document.body.appendChild(alert);
+    setTimeout(() => {
+        alert.remove();
+    }, 10000);
+}
+
 function triggerBrowserNotification(reminder) {
-
-    if (!("Notification" in window)) return;
-
-    if (Notification.permission === "granted") {
-
+    if ("Notification" in window && Notification.permission === "granted") {
         new Notification("Rappel de réservation", {
             body: `${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"} demain (${formatDate(reminder.reservation_date)})`
         });
-
+        playNotificationSound();
+        flashDocumentTitle("🔔 Nouveau rappel !");
+        return;
     }
 
+    playNotificationSound();
+    flashDocumentTitle("🔔 Nouveau rappel !");
+    showInPageAlert(reminder);
 }
 
-// Ask for notification permission once, on page load
-if ("Notification" in window && Notification.permission === "default") {
-    Notification.requestPermission();
+function requestNotificationPermissionOnInteraction() {
+    if (!("Notification" in window)) return;
+
+    const requestPermission = () => {
+        if (Notification.permission === "default") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    playNotificationSound();
+                }
+            });
+        }
+    };
+
+    document.addEventListener("click", requestPermission, { once: true });
+    document.addEventListener("keydown", requestPermission, { once: true });
 }
+
+requestNotificationPermissionOnInteraction();
 
 // Toggle dropdown on bell click
 notifBell.addEventListener("click", () => {
