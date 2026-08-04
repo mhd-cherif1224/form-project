@@ -1,6 +1,23 @@
 const db = require("../config/db");
 const generateReminders = require("../jobs/generateReminders");
 
+function resolveReminderDatetime(reminder_datetime, reservation, reservation_date) {
+    if (reminder_datetime) {
+        return reminder_datetime;
+    }
+
+    if (reservation === "Oui" && reservation_date) {
+        const reservationDate = new Date(`${reservation_date}T00:00:00`);
+        reservationDate.setDate(reservationDate.getDate() - 1);
+        const yyyy = reservationDate.getFullYear();
+        const mm = String(reservationDate.getMonth() + 1).padStart(2, "0");
+        const dd = String(reservationDate.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd} 09:00:00`;
+    }
+
+    return null;
+}
+
 exports.createClient = (req, res) => {
     const {
         nom,
@@ -20,6 +37,12 @@ exports.createClient = (req, res) => {
         assigne_a,
         reminder_datetime
     } = req.body;
+
+    const reminderDatetime = resolveReminderDatetime(
+        reminder_datetime,
+        reservation,
+        reservation_date
+    );
 
     const sql = `
         INSERT INTO clients (
@@ -61,7 +84,7 @@ exports.createClient = (req, res) => {
             description,
             travail,
             assigne_a,
-            reminder_datetime
+            reminderDatetime
         ],
         (err, result) => {
             if (err) {
@@ -73,63 +96,6 @@ exports.createClient = (req, res) => {
             }
 
             const newClientId = result.insertId;
-
-            if (reservation === "Oui" && reservation_date) {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
-
-                if (reservation_date === tomorrowDate) {
-                    const reminderSql = `
-                        INSERT INTO reminders (
-                            client_id,
-                            nom,
-                            prenom,
-                            telephone,
-                            whatsapp,
-                            facebook,
-                            instagram,
-                            snapchat,
-                            tiktok,
-                            reservation_de_quoi,
-                            reservation_date
-                        )
-                        SELECT
-                            id,
-                            nom,
-                            prenom,
-                            telephone,
-                            whatsapp,
-                            facebook,
-                            instagram,
-                            snapchat,
-                            tiktok,
-                            reservation_de_quoi,
-                            reservation_date
-                        FROM clients
-                        WHERE id = ?
-                          AND reservation_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-                    `;
-
-                    return db.query(reminderSql, [newClientId], (reminderErr, reminderResult) => {
-                        if (reminderErr) {
-                            console.error(reminderErr);
-                            return res.status(500).json({
-                                success: false,
-                                message: reminderErr.message
-                            });
-                        }
-
-                        console.log("Inserted reservation reminders:", reminderResult.affectedRows);
-
-                        return res.status(201).json({
-                            success: true,
-                            message: "Client ajouté avec succès.",
-                            id: newClientId
-                        });
-                    });
-                }
-            }
 
             return res.status(201).json({
                 success: true,
@@ -222,6 +188,12 @@ exports.updateClient = (req, res) => {
         assigne_a
     } = req.body;
 
+    const reminderDatetime = resolveReminderDatetime(
+        null,
+        reservation,
+        reservation_date
+    );
+
     const sql = `
         UPDATE clients
         SET
@@ -239,7 +211,8 @@ exports.updateClient = (req, res) => {
             reservation_date = ?,
             description = ?,
             travail = ?,
-            assigne_a = ?
+            assigne_a = ?,
+            reminder_datetime = ?
         WHERE id = ?
     `;
 
@@ -261,6 +234,7 @@ exports.updateClient = (req, res) => {
             description,
             travail,
             assigne_a,
+            reminderDatetime,
             id
         ],
         (err, result) => {

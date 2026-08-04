@@ -1,5 +1,8 @@
 const cron = require("node-cron");
+const { EventEmitter } = require("events");
 const db = require("../config/db");
+
+const reminderEvents = new EventEmitter();
 
 function generateReminders() {
 
@@ -64,6 +67,7 @@ function generateReminders() {
             }
 
             console.log(`${clearResult.affectedRows} client reminder(s) cleared`);
+            reminderEvents.emit("reminder-generated", { count: result.affectedRows });
 
         });
 
@@ -76,3 +80,4 @@ cron.schedule("0 8 * * *", generateReminders);
 generateReminders();
 
 module.exports = generateReminders;
+module.exports.reminderEvents = reminderEvents;

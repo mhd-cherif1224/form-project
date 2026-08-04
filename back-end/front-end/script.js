@@ -526,6 +526,23 @@ const notifDropdown = document.getElementById("notifDropdown");
 const notifList = document.getElementById("notifList");
 
 let lastReminderIds = new Set();
+let remindersEventSource = null;
+
+function initializeReminderEvents() {
+    if (!window.EventSource || remindersEventSource) {
+        return;
+    }
+
+    remindersEventSource = new EventSource("/api/clients/reminders/events");
+
+    remindersEventSource.addEventListener("reminder-generated", () => {
+        checkReminders();
+    });
+
+    remindersEventSource.onerror = (error) => {
+        console.error("Erreur de connexion aux rappels en temps réel:", error);
+    };
+}
 
 async function checkReminders() {
 
@@ -640,9 +657,9 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Check immediately on load, then every 5 minutes
+// Check immediately on load and keep the page synced in real time.
 checkReminders();
-setInterval(checkReminders, 5 * 60 * 1000);
+initializeReminderEvents();
 // ==============================
 // Submit Form
 // ==============================

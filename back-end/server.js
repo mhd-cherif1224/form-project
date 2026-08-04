@@ -9,7 +9,25 @@ const app = express();
 // Connect to MySQL
 require("./config/db");
 
-require("./jobs/generateReminders");
+const reminderJob = require("./jobs/generateReminders");
+
+app.get("/api/clients/reminders/events", (req, res) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders?.();
+    res.write(": connected\n\n");
+
+    const onReminderGenerated = () => {
+        res.write(`event: reminder-generated\ndata: {}\n\n`);
+    };
+
+    reminderJob.reminderEvents.on("reminder-generated", onReminderGenerated);
+
+    req.on("close", () => {
+        reminderJob.reminderEvents.off("reminder-generated", onReminderGenerated);
+    });
+});
 
 // Middlewares
 app.use(cors());
