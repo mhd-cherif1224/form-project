@@ -1,21 +1,27 @@
 const db = require("../config/db");
 const generateReminders = require("../jobs/generateReminders");
 
-function resolveReminderDatetime(reminder_datetime, reservation, reservation_date) {
+function resolveReminderDatetime(reminder_datetime) {
     if (reminder_datetime) {
         return reminder_datetime;
     }
 
-    if (reservation === "Oui" && reservation_date) {
-        const reservationDate = new Date(`${reservation_date}T00:00:00`);
-        reservationDate.setDate(reservationDate.getDate() - 1);
-        const yyyy = reservationDate.getFullYear();
-        const mm = String(reservationDate.getMonth() + 1).padStart(2, "0");
-        const dd = String(reservationDate.getDate()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd} 09:00:00`;
+    return null;
+}
+
+function buildAutomaticReservationReminderDate(reservation_date) {
+    if (!reservation_date) {
+        return null;
     }
 
-    return null;
+    const reminderDate = new Date(`${reservation_date}T09:00:00`);
+    reminderDate.setDate(reminderDate.getDate() - 1);
+    reminderDate.setHours(9, 0, 0, 0);
+
+    const yyyy = reminderDate.getFullYear();
+    const mm = String(reminderDate.getMonth() + 1).padStart(2, "0");
+    const dd = String(reminderDate.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd} 09:00:00`;
 }
 
 exports.createClient = (req, res) => {
@@ -38,11 +44,8 @@ exports.createClient = (req, res) => {
         reminder_datetime
     } = req.body;
 
-    const reminderDatetime = resolveReminderDatetime(
-        reminder_datetime,
-        reservation,
-        reservation_date
-    );
+    const reminderDatetime = resolveReminderDatetime(reminder_datetime);
+    const automaticReservationReminder = buildAutomaticReservationReminderDate(reservation_date);
 
     const sql = `
         INSERT INTO clients (
@@ -96,6 +99,53 @@ exports.createClient = (req, res) => {
             }
 
             const newClientId = result.insertId;
+
+            if (automaticReservationReminder && (!reminder_datetime || reminder_datetime === "")) {
+                const autoReminderSql = `
+                    INSERT INTO reminders (
+                        client_id,
+                        nom,
+                        prenom,
+                        telephone,
+                        whatsapp,
+                        facebook,
+                        instagram,
+                        snapchat,
+                        tiktok,
+                        reservation_de_quoi,
+                        reservation_date
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+
+                return db.query(
+                    autoReminderSql,
+                    [
+                        newClientId,
+                        nom,
+                        prenom,
+                        telephone,
+                        whatsapp,
+                        facebook,
+                        instagram,
+                        snapchat,
+                        tiktok,
+                        reservation_de_quoi || "Rappel programmé",
+                        reservation_date
+                    ],
+                    (autoReminderErr) => {
+                        if (autoReminderErr) {
+                            console.error(autoReminderErr);
+                        }
+
+                        return res.status(201).json({
+                            success: true,
+                            message: "Client ajouté avec succès.",
+                            id: newClientId
+                        });
+                    }
+                );
+            }
 
             return res.status(201).json({
                 success: true,
@@ -185,83 +235,96 @@ exports.updateClient = (req, res) => {
         reservation_date,
         description,
         travail,
-        assigne_a
+        assigne_a,
+        reminder_datetime
     } = req.body;
 
-    const reminderDatetime = resolveReminderDatetime(
-        null,
-        reservation,
-        reservation_date
-    );
+    const fetchSql = `SELECT * FROM clients WHERE id = ?`;
 
-    const sql = `
-        UPDATE clients
-        SET
-            nom = ?,
-            prenom = ?,
-            fonctionne = ?,
-            telephone = ?,
-            whatsapp = ?,
-            facebook = ?,
-            instagram = ?,
-            snapchat = ?,
-            tiktok = ?,
-            reservation = ?,
-            reservation_de_quoi = ?,
-            reservation_date = ?,
-            description = ?,
-            travail = ?,
-            assigne_a = ?,
-            reminder_datetime = ?
-        WHERE id = ?
-    `;
-
-    db.query(
-        sql,
-        [
-            nom,
-            prenom,
-            fonctionne,
-            telephone,
-            whatsapp,
-            facebook,
-            instagram,
-            snapchat,
-            tiktok,
-            reservation,
-            reservation_de_quoi,
-            reservation_date,
-            description,
-            travail,
-            assigne_a,
-            reminderDatetime,
-            id
-        ],
-        (err, result) => {
-
-            if (err) {
-                console.error(err);
-
-                return res.status(500).json({
-                    success: false,
-                    message: err.message
-                });
-            }
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Client introuvable."
-                });
-            }
-
-            res.json({
-                success: true,
-                message: "Client modifié avec succès."
-            });
-
+    db.query(fetchSql, [id], (fetchErr, fetchResult) => {
+        if (fetchErr) {
+            console.error(fetchErr);
+            return res.status(500).json({ message: "Erreur serveur." });
         }
-    );
+
+        const existingClient = fetchResult[0] || {};
+        const safeReservation = reservation ?? existingClient.reservation ?? null;
+        const safeReservationDeQuoi = reservation_de_quoi ?? existingClient.reservation_de_quoi ?? null;
+        const safeReservationDate = reservation_date ?? existingClient.reservation_date ?? null;
+        const existingReminder = existingClient.reminder_datetime ?? null;
+        const reminderDatetime = resolveReminderDatetime(
+            reminder_datetime ?? existingReminder
+        );
+
+        const sql = `
+            UPDATE clients
+            SET
+                nom = ?,
+                prenom = ?,
+                fonctionne = ?,
+                telephone = ?,
+                whatsapp = ?,
+                facebook = ?,
+                instagram = ?,
+                snapchat = ?,
+                tiktok = ?,
+                reservation = ?,
+                reservation_de_quoi = ?,
+                reservation_date = ?,
+                description = ?,
+                travail = ?,
+                assigne_a = ?,
+                reminder_datetime = ?
+            WHERE id = ?
+        `;
+
+        db.query(
+            sql,
+            [
+                nom ?? existingClient.nom,
+                prenom ?? existingClient.prenom,
+                fonctionne ?? existingClient.fonctionne,
+                telephone ?? existingClient.telephone,
+                whatsapp ?? existingClient.whatsapp,
+                facebook ?? existingClient.facebook,
+                instagram ?? existingClient.instagram,
+                snapchat ?? existingClient.snapchat,
+                tiktok ?? existingClient.tiktok,
+                safeReservation,
+                safeReservationDeQuoi,
+                safeReservationDate,
+                description ?? existingClient.description,
+                travail ?? existingClient.travail,
+                assigne_a ?? existingClient.assigne_a,
+                reminderDatetime,
+                id
+            ],
+            (err, result) => {
+
+                if (err) {
+                    console.error(err);
+
+                    return res.status(500).json({
+                        success: false,
+                        message: err.message
+                    });
+                }
+
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Client introuvable."
+                    });
+                }
+
+                res.json({
+                    success: true,
+                    message: "Client modifié avec succès."
+                });
+
+            }
+        );
+    });
 
 };
 exports.checkClient = (req, res) => {

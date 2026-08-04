@@ -51,17 +51,59 @@ const PAGE_SIZE = 50;
 
 //helper funcs 
 
+function parseDateValue(dateString) {
+
+    if (!dateString) return null;
+
+    if (dateString instanceof Date) {
+        return dateString;
+    }
+
+    if (typeof dateString !== "string") {
+        return null;
+    }
+
+    const trimmed = dateString.trim();
+    const direct = new Date(trimmed.replace(" ", "T"));
+
+    if (!Number.isNaN(direct.getTime())) {
+        return direct;
+    }
+
+    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+
+    if (!match) {
+        return null;
+    }
+
+    const [, year, month, day, hour, minute, second = "00"] = match;
+
+    return new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second)
+    );
+
+}
+
 function formatDate(dateString) {
 
     if (!dateString) return "-";
 
-    const date = new Date(dateString);
+    const date = parseDateValue(dateString);
+
+    if (!date) return "-";
 
     const jj = String(date.getDate()).padStart(2, "0");
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const yyyy = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
 
-    return `${jj}.${mm}.${yyyy}`;
+    return `${jj}.${mm}.${yyyy} ${hh}:${min}`;
 
 }
 
@@ -69,7 +111,9 @@ function formatReminder(dateTimeString) {
 
     if (!dateTimeString) return "-";
 
-    const date = new Date(dateTimeString);
+    const date = parseDateValue(dateTimeString);
+
+    if (!date) return "-";
 
     const jj = String(date.getDate()).padStart(2, "0");
     const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -272,6 +316,7 @@ function openClient(client) {
     resetForm();
 
     editingClientId = client.id;
+    reminderDatetime = client.reminder_datetime ?? null;
 
     addTab.classList.add("active");
     listTab.classList.remove("active");
@@ -328,12 +373,12 @@ function openClient(client) {
         document.getElementById("tiktokField").style.display = "block";
         document.getElementById("tiktok").value = client.tiktok;
     }
-    if (client.reservation === "oui") {
-    reservationCheck.checked = true;
-    document.getElementById("reservationFields").style.display = "block";
-    reservationDeQuoi.value = client.reservation_de_quoi ?? "";
-    reservationQuand.value = client.reservation_date ?? "";
-}
+    if (String(client.reservation ?? "").toLowerCase() === "oui") {
+        reservationCheck.checked = true;
+        document.getElementById("reservationFields").style.display = "block";
+        reservationDeQuoi.value = client.reservation_de_quoi ?? "";
+        reservationQuand.value = client.reservation_date ?? "";
+    }
     if (travail.value === "fini") {
         description.required = false;
     } else {
@@ -562,7 +607,7 @@ async function checkReminders() {
         notifList.innerHTML = reminders.map(reminder => `
             <div class="notif-item" data-id="${reminder.id}">
                 <strong>${reminder.nom} ${reminder.prenom}</strong>
-                <span>${reminder.reservation_de_quoi ?? "Réservation"} — ${formatDate(reminder.reservation_date)}</span>
+                <span>${reminder.reservation_de_quoi ?? "Réservation"} — ${formatDate(getReminderTimestampValue(reminder))}</span>
                 <span class="notif-contact">
                     ${reminder.telephone ? `<ion-icon name="call-outline"></ion-icon> ${reminder.telephone}<br>` : ""}
                     ${reminder.whatsapp ? `<ion-icon name="logo-whatsapp"></ion-icon> ${reminder.whatsapp}<br>` : ""}
@@ -667,12 +712,33 @@ function flashDocumentTitle(message) {
     }, 10000);
 }
 
+function getReminderTimestampValue(reminder) {
+    return reminder.created_at || reminder.reminder_datetime || reminder.reservation_date || null;
+}
+
+function getReminderDisplayTime(reminder) {
+    const value = getReminderTimestampValue(reminder);
+
+    if (!value) {
+        return "09:00";
+    }
+
+    const date = parseDateValue(value);
+
+    if (!date) {
+        return "09:00";
+    }
+
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
 function showInPageAlert(reminder) {
     const alert = document.createElement("div");
     alert.className = "reminder-alert-banner";
+    const reminderHour = getReminderDisplayTime(reminder);
     alert.innerHTML = `
         <strong>Rappel :</strong> ${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"}<br>
-        ${formatDate(reminder.reservation_date)} à 09:00
+        ${formatDate(reminder.reservation_date)} à ${reminderHour}
         <button class="reminder-alert-close">OK</button>
     `;
 
@@ -710,10 +776,33 @@ function showInPageAlert(reminder) {
     }, 10000);
 }
 
+function getReminderMessage(reminder) {
+    const reminderHour = getReminderDisplayTime(reminder);
+    const reservationDate = reminder.reservation_date ? new Date(`${reminder.reservation_date}T00:00:00`) : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (reservationDate) {
+        const diffDays = Math.round((reservationDate - today) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+            return `${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"} aujourd'hui (${formatDate(reminder.reservation_date)}) à ${reminderHour}`;
+        }
+
+        if (diffDays === 1) {
+            return `${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"} demain (${formatDate(reminder.reservation_date)}) à ${reminderHour}`;
+        }
+    }
+
+    return `${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"} (${formatDate(reminder.reservation_date)}) à ${reminderHour}`;
+}
+
 function triggerBrowserNotification(reminder) {
+    const message = getReminderMessage(reminder);
+
     if ("Notification" in window && Notification.permission === "granted") {
         new Notification("Rappel de réservation", {
-            body: `${reminder.nom} ${reminder.prenom} — ${reminder.reservation_de_quoi ?? "réservation"} demain (${formatDate(reminder.reservation_date)})`
+            body: message
         });
         playNotificationSound();
         flashDocumentTitle("🔔 Nouveau rappel !");

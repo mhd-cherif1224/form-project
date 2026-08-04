@@ -32,7 +32,7 @@ function generateReminders() {
             snapchat,
             tiktok,
             'Rappel programmé',
-            DATE(reminder_datetime)
+            reminder_datetime
         FROM clients
         WHERE reminder_datetime IS NOT NULL
           AND reminder_datetime <= NOW()
