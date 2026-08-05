@@ -5,6 +5,16 @@ const db = require("../config/db");
 const reminderEvents = new EventEmitter();
 
 function generateReminders() {
+    console.log("UTC :", new Date().toISOString());
+
+    db.query(
+        "SELECT UTC_TIMESTAMP() AS utc, NOW() AS now",
+        (err, rows) => {
+            if (!err) {
+                console.log(rows[0]);
+            }
+        }
+    );
 
     const insertSql = `
         INSERT INTO reminders
