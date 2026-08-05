@@ -1,12 +1,17 @@
 const db = require("../config/db");
 const generateReminders = require("../jobs/generateReminders");
 
-function resolveReminderDatetime(reminder_datetime) {
-    if (reminder_datetime) {
-        return reminder_datetime;
+function normalizeReminderDatetimeToUtc(reminder_datetime) {
+    if (!reminder_datetime) {
+        return null;
     }
 
-    return null;
+    const date = new Date(reminder_datetime);
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    return date.toISOString().slice(0, 19).replace("T", " ");
 }
 
 function buildAutomaticReservationReminderDate(reservation_date) {
@@ -18,10 +23,7 @@ function buildAutomaticReservationReminderDate(reservation_date) {
     reminderDate.setDate(reminderDate.getDate() - 1);
     reminderDate.setHours(9, 0, 0, 0);
 
-    const yyyy = reminderDate.getFullYear();
-    const mm = String(reminderDate.getMonth() + 1).padStart(2, "0");
-    const dd = String(reminderDate.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd} 09:00:00`;
+    return reminderDate.toISOString().slice(0, 19).replace("T", " ");
 }
 
 exports.createClient = (req, res) => {
@@ -44,7 +46,7 @@ exports.createClient = (req, res) => {
         reminder_datetime
     } = req.body;
 
-    const reminderDatetime = resolveReminderDatetime(reminder_datetime);
+    const reminderDatetime = reminder_datetime ? normalizeReminderDatetimeToUtc(reminder_datetime) : null;
     const automaticReservationReminder = buildAutomaticReservationReminderDate(reservation_date);
 
     const sql = `
@@ -252,9 +254,9 @@ exports.updateClient = (req, res) => {
         const safeReservationDeQuoi = reservation_de_quoi ?? existingClient.reservation_de_quoi ?? null;
         const safeReservationDate = reservation_date ?? existingClient.reservation_date ?? null;
         const existingReminder = existingClient.reminder_datetime ?? null;
-        const reminderDatetime = resolveReminderDatetime(
-            reminder_datetime ?? existingReminder
-        );
+        const reminderDatetime = reminder_datetime
+            ? normalizeReminderDatetimeToUtc(reminder_datetime)
+            : existingReminder;
 
         const sql = `
             UPDATE clients
@@ -492,6 +494,7 @@ exports.setReminder = (req, res) => {
 
     const { id } = req.params;
     const { reminder_datetime } = req.body;
+    const normalizedReminderDatetime = normalizeReminderDatetimeToUtc(reminder_datetime);
 
     const sql = `
         UPDATE clients
@@ -499,7 +502,7 @@ exports.setReminder = (req, res) => {
         WHERE id = ?
     `;
 
-    db.query(sql, [reminder_datetime, id], (err, result) => {
+    db.query(sql, [normalizedReminderDatetime, id], (err, result) => {
 
         if (err) {
             console.error(err);
@@ -508,7 +511,8 @@ exports.setReminder = (req, res) => {
 
         res.json({
             success: true,
-            message: "Rappel enregistré."
+            message: "Rappel enregistré.",
+            reminder_datetime: normalizedReminderDatetime
         });
 
     });

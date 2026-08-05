@@ -70,22 +70,26 @@ function parseDateValue(dateString) {
         return direct;
     }
 
-    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?(Z|[+-]\d{2}:?\d{2})?$/);
 
     if (!match) {
         return null;
     }
 
-    const [, year, month, day, hour, minute, second = "00"] = match;
+    const [, year, month, day, hour, minute, second = "00", offset] = match;
 
-    return new Date(
+    if (offset) {
+        return new Date(trimmed.replace(" ", "T"));
+    }
+
+    return new Date(Date.UTC(
         Number(year),
         Number(month) - 1,
         Number(day),
         Number(hour),
         Number(minute),
         Number(second)
-    );
+    ));
 
 }
 
@@ -123,6 +127,21 @@ function formatReminder(dateTimeString) {
 
     return `${jj}.${mm}.${yyyy} ${hh}:${min}`;
 
+}
+
+function toLocalDateTimeInputValue(utcDateTimeString) {
+    if (!utcDateTimeString) return "";
+
+    const date = parseDateValue(utcDateTimeString);
+    if (!date) return "";
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
 // ==============================
@@ -998,9 +1017,9 @@ floatingReminderBtn.addEventListener("click", () => {
         : null;
 
     reminderDateTimeInput.value = reminderDatetime
-        ? reminderDatetime.slice(0, 16)
+        ? reminderDatetime
         : client?.reminder_datetime
-            ? client.reminder_datetime.slice(0, 16)
+            ? toLocalDateTimeInputValue(client.reminder_datetime)
             : "";
 
     reminderModal.classList.remove("hidden");
@@ -1040,7 +1059,7 @@ saveReminderBtn.addEventListener("click", async () => {
             }
 
             const client = clients.find(c => c.id === editingClientId);
-            if (client) client.reminder_datetime = reminder_datetime;
+            if (client) client.reminder_datetime = result.reminder_datetime || reminder_datetime;
             if (!listSection.classList.contains("hidden")) {
                 displayClients(clients);
             }

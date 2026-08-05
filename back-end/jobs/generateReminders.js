@@ -35,7 +35,7 @@ function generateReminders() {
             reminder_datetime
         FROM clients
         WHERE reminder_datetime IS NOT NULL
-          AND reminder_datetime <= NOW()
+          AND reminder_datetime <= UTC_TIMESTAMP()
     `;
 
     db.query(insertSql, (err, result) => {
@@ -56,7 +56,7 @@ function generateReminders() {
             UPDATE clients
             SET reminder_datetime = NULL
             WHERE reminder_datetime IS NOT NULL
-              AND reminder_datetime <= NOW()
+              AND reminder_datetime <= UTC_TIMESTAMP()
         `;
 
         db.query(clearSql, (clearErr, clearResult) => {
