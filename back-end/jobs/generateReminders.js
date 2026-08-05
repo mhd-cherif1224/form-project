@@ -16,37 +16,57 @@ function generateReminders() {
         }
     );
 
-    const insertSql = `
-        INSERT INTO reminders
-        (
-            client_id,
-            nom,
-            prenom,
-            telephone,
-            whatsapp,
-            facebook,
-            instagram,
-            snapchat,
-            tiktok,
-            reservation_de_quoi,
-            reservation_date
-        )
-        SELECT
-            id,
-            nom,
-            prenom,
-            telephone,
-            whatsapp,
-            facebook,
-            instagram,
-            snapchat,
-            tiktok,
-            'Rappel programmé',
-            reminder_datetime
+        db.query(
+        `
+        SELECT id, reminder_datetime
         FROM clients
         WHERE reminder_datetime IS NOT NULL
-          AND reminder_datetime <= UTC_TIMESTAMP()
-    `;
+        `,
+        (err, rows) => {
+            if (!err) {
+                console.log("Pending reminders:", rows);
+            }
+        }
+    );
+
+    const insertSql = `
+    INSERT INTO reminders
+    (
+        client_id,
+        nom,
+        prenom,
+        telephone,
+        whatsapp,
+        facebook,
+        instagram,
+        snapchat,
+        tiktok,
+        reservation_de_quoi,
+        reservation_date
+    )
+    SELECT
+        id,
+        nom,
+        prenom,
+        telephone,
+        whatsapp,
+        facebook,
+        instagram,
+        snapchat,
+        tiktok,
+        'Rappel programmé',
+        reminder_datetime
+    FROM clients
+    WHERE reminder_datetime IS NOT NULL
+      AND reminder_datetime <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR)
+`;
+
+const clearSql = `
+    UPDATE clients
+    SET reminder_datetime = NULL
+    WHERE reminder_datetime IS NOT NULL
+      AND reminder_datetime <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR)
+`;
 
     db.query(insertSql, (err, result) => {
 
