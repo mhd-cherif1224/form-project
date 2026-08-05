@@ -340,7 +340,9 @@
 
     <h2><ion-icon name="people-outline"></ion-icon> Liste des Clients</h2>
 
-    <table>
+    <div class="table-wrapper">
+        
+    <table id="clientsTable">
 
         <thead>
 
@@ -366,11 +368,12 @@
 
         </thead>
 
-        <tbody id="clientsTable">
+        <tbody id="clientsTableBody">
 
         </tbody>
 
     </table>
+</div>
 
     <!-- Pagination controls -->
     <div id="paginationControls"></div>

@@ -152,7 +152,7 @@ function toLocalDateTimeInputValue(utcDateTimeString) {
 
 function displayClients(clientList) {
 
-    const table = document.getElementById("clientsTable");
+    const table = document.getElementById("clientsTableBody");
 
     if (clientList.length === 0) {
         table.innerHTML = `
