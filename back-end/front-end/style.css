@@ -788,9 +788,14 @@ tbody tr:last-child td{
 /* Table */
 
 .table-wrapper{
-    width:100%;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
+    overflow-x: auto;
+    cursor: grab;
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper:active{
+    cursor: grabbing;
 }
 
 table{
