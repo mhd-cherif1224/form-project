@@ -1,13 +1,32 @@
 const db = require("../config/db");
 const generateReminders = require("../jobs/generateReminders");
 
+function parseLocalDatetimeToDate(localDatetime) {
+    if (!localDatetime) return null;
+
+    const trimmed = String(localDatetime).trim().replace(" ", "T");
+    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+    if (!match) return null;
+
+    const [, year, month, day, hour, minute, second = "00"] = match;
+
+    return new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second)
+    );
+}
+
 function normalizeReminderDatetimeToUtc(reminder_datetime) {
     if (!reminder_datetime) {
         return null;
     }
 
-    const date = new Date(reminder_datetime);
-    if (Number.isNaN(date.getTime())) {
+    const date = parseLocalDatetimeToDate(reminder_datetime);
+    if (!date || Number.isNaN(date.getTime())) {
         return null;
     }
 
@@ -19,9 +38,17 @@ function buildAutomaticReservationReminderDate(reservation_date) {
         return null;
     }
 
-    const reminderDate = new Date(`${reservation_date}T09:00:00`);
+    const [year, month, day] = reservation_date.split("-");
+    const reminderDate = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        9,
+        0,
+        0
+    );
+
     reminderDate.setDate(reminderDate.getDate() - 1);
-    reminderDate.setHours(9, 0, 0, 0);
 
     return reminderDate.toISOString().slice(0, 19).replace("T", " ");
 }

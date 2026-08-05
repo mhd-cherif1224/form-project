@@ -65,7 +65,6 @@ function parseDateValue(dateString) {
 
     const trimmed = dateString.trim();
     const direct = new Date(trimmed.replace(" ", "T"));
-
     if (!Number.isNaN(direct.getTime())) {
         return direct;
     }
@@ -82,6 +81,8 @@ function parseDateValue(dateString) {
         return new Date(trimmed.replace(" ", "T"));
     }
 
+    // When the backend stores UTC datetime strings without an offset,
+    // parse them as UTC so display reflects the correct local time.
     return new Date(Date.UTC(
         Number(year),
         Number(month) - 1,
