@@ -20,19 +20,13 @@ function parseLocalDatetimeToDate(localDatetime) {
     );
 }
 
-function normalizeReminderDatetimeToUtc(reminder_datetime) {
+function normalizeReminderDatetime(reminder_datetime) {
     if (!reminder_datetime) {
         return null;
     }
 
-    const date = parseLocalDatetimeToDate(reminder_datetime);
-    if (!date || Number.isNaN(date.getTime())) {
-        return null;
-    }
-
-    return date.toISOString().slice(0, 19).replace("T", " ");
+    return reminder_datetime.replace("T", " ") + ":00";
 }
-
 function buildAutomaticReservationReminderDate(reservation_date) {
     if (!reservation_date) {
         return null;
@@ -73,7 +67,7 @@ exports.createClient = (req, res) => {
         reminder_datetime
     } = req.body;
 
-    const reminderDatetime = reminder_datetime ? normalizeReminderDatetimeToUtc(reminder_datetime) : null;
+    const reminderDatetime = reminder_datetime ? normalizeReminderDatetime(reminder_datetime) : null;
     const automaticReservationReminder = buildAutomaticReservationReminderDate(reservation_date);
 
     const sql = `
@@ -282,7 +276,7 @@ exports.updateClient = (req, res) => {
         const safeReservationDate = reservation_date ?? existingClient.reservation_date ?? null;
         const existingReminder = existingClient.reminder_datetime ?? null;
         const reminderDatetime = reminder_datetime
-            ? normalizeReminderDatetimeToUtc(reminder_datetime)
+            ? normalizeReminderDatetime(reminder_datetime)
             : existingReminder;
 
         const sql = `
@@ -521,7 +515,7 @@ exports.setReminder = (req, res) => {
 
     const { id } = req.params;
     const { reminder_datetime } = req.body;
-    const normalizedReminderDatetime = normalizeReminderDatetimeToUtc(reminder_datetime);
+    const normalizedReminderDatetime = normalizeReminderDatetime(reminder_datetime);
 
     const sql = `
         UPDATE clients

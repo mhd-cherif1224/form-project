@@ -56,7 +56,7 @@ function generateReminders() {
             UPDATE clients
             SET reminder_datetime = NULL
             WHERE reminder_datetime IS NOT NULL
-              AND reminder_datetime <= UTC_TIMESTAMP()
+              AND reminder_datetime <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR)
         `;
 
         db.query(clearSql, (clearErr, clearResult) => {
