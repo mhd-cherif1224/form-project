@@ -144,7 +144,20 @@ function toLocalDateTimeInputValue(utcDateTimeString) {
 
     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
+// ==============================
+// Pending reminders lookup (for row highlighting)
+// ==============================
 
+
+let pendingReminderByClientId = new Map();
+
+function rebuildPendingReminderMap(reminders) {
+    pendingReminderByClientId = new Map(
+        reminders
+            .filter(r => r.client_id ?? r.id) // adjust key to whatever links reminder -> client
+            .map(r => [r.client_id ?? r.id, r])
+    );
+}
 // ==============================
 // Display Clients
 // ==============================
@@ -165,8 +178,21 @@ function displayClients(clientList) {
         return;
     }
 
-    const rows = clientList.map(client => `
-        <tr class="client-row" data-id="${client.id}">
+    const rows = clientList.map(client => {
+    let statusClass = "";
+    if (client.travail === "fini") {
+        statusClass = "row-fini";
+    } else if (client.travail === "en_cours") {
+        statusClass = "row-en-cours";
+    }
+
+    const pendingReminder = pendingReminderByClientId.get(client.id);
+    if (pendingReminder) {
+        statusClass += " row-reminder-pending";
+    }
+
+    return `
+        <tr class="client-row ${statusClass}" data-id="${client.id}" id="client-${client.id}">
             <td>${client.nom}</td>
             <td>${client.prenom}</td>
             <td>${client.fonctionne}</td>
@@ -181,9 +207,50 @@ function displayClients(clientList) {
             <td>${formatDate(client.reservation_date)}</td>
             <td>${client.travail}</td>
             <td>${client.assigne_a}</td>
-            <td>${formatReminder(client.reminder_datetime)}</td>
+            <td class="rappel-cell" data-reminder-id="${pendingReminder ? pendingReminder.id : ""}">
+                ${formatReminder(client.reminder_datetime)}
+            </td>
         </tr>
-    `).join("");
+    `;
+}).join("");
+
+table.innerHTML = rows;
+
+document.querySelectorAll(".client-row").forEach(row => {
+    row.addEventListener("dblclick", (e) => {
+        // if the dblclick landed on the Rappel cell, dismiss instead of opening edit
+        if (e.target.closest(".rappel-cell")) return;
+
+        const id = Number(row.dataset.id);
+        const client = clients.find(c => c.id === id);
+        if (client) openClient(client);
+    });
+});
+
+document.querySelectorAll(".rappel-cell").forEach(cell => {
+    cell.addEventListener("dblclick", async (e) => {
+        e.stopPropagation();
+
+        const reminderId = cell.dataset.reminderId;
+        if (!reminderId) return; // nothing pending on this row
+
+        try {
+            await fetch(`/api/clients/reminders/${reminderId}`, {
+                method: "DELETE"
+            });
+        } catch (error) {
+            console.error("Erreur lors de la suppression du rappel:", error);
+            return;
+        }
+
+        pendingReminderByClientId.delete(Number(cell.closest(".client-row").dataset.id));
+        cell.closest(".client-row").classList.remove("row-reminder-pending");
+        cell.dataset.reminderId = "";
+    });
+});
+
+document.getElementById("clientsTableBody").innerHTML = rows;
+    
 
     table.innerHTML = rows;
 
@@ -615,6 +682,11 @@ async function checkReminders() {
 
         const response = await fetch("/api/clients/reminders");
         const reminders = await response.json();
+
+        rebuildPendingReminderMap(reminders);
+        if (!listSection.classList.contains("hidden")) {
+            displayClients(clients);
+        }
 
         notifBadge.textContent = reminders.length;
         notifBadge.classList.toggle("hidden", reminders.length === 0);

@@ -105,9 +105,49 @@ const clearSql = `
 
 }
 
+function generateReservationReminders() {
+
+    const insertSql = `
+        INSERT INTO reminders
+        (
+            client_id, nom, prenom, telephone, whatsapp, facebook,
+            instagram, snapchat, tiktok, reservation_de_quoi, reservation_date
+        )
+        SELECT
+            c.id, c.nom, c.prenom, c.telephone, c.whatsapp, c.facebook,
+            c.instagram, c.snapchat, c.tiktok, c.reservation_de_quoi, c.reservation_date
+        FROM clients c
+        WHERE c.reservation = 'Oui'
+          AND c.reservation_date IS NOT NULL
+          AND DATE(c.reservation_date) = CURDATE()
+          AND NOT EXISTS (
+              SELECT 1 FROM reminders r
+              WHERE r.client_id = c.id
+                AND r.reservation_date = c.reservation_date
+          )
+    `;
+
+    db.query(insertSql, (err, result) => {
+
+        if (err) {
+            console.error(err);
+            return;
+        }
+
+        console.log(`${result.affectedRows} reservation reminder(s) generated`);
+
+        if (result.affectedRows > 0) {
+            reminderEvents.emit("reminder-generated", { count: result.affectedRows });
+        }
+
+    });
+
+}
+
 cron.schedule("* * * * *", generateReminders);
-cron.schedule("0 8 * * *", generateReminders);
+cron.schedule("0 8 * * *", generateReservationReminders); // 08:00 UTC = 09:00 Sétif
 generateReminders();
 
 module.exports = generateReminders;
 module.exports.reminderEvents = reminderEvents;
+module.exports.generateReservationReminders = generateReservationReminders;

@@ -33,6 +33,7 @@ function buildAutomaticReservationReminderDate(reservation_date) {
     }
 
     const [year, month, day] = reservation_date.split("-");
+
     const reminderDate = new Date(
         Number(year),
         Number(month) - 1,
@@ -42,9 +43,17 @@ function buildAutomaticReservationReminderDate(reservation_date) {
         0
     );
 
+    // Previous day
     reminderDate.setDate(reminderDate.getDate() - 1);
 
-    return reminderDate.toISOString().slice(0, 19).replace("T", " ");
+    const yyyy = reminderDate.getFullYear();
+    const mm = String(reminderDate.getMonth() + 1).padStart(2, "0");
+    const dd = String(reminderDate.getDate()).padStart(2, "0");
+    const hh = String(reminderDate.getHours()).padStart(2, "0");
+    const mi = String(reminderDate.getMinutes()).padStart(2, "0");
+    const ss = String(reminderDate.getSeconds()).padStart(2, "0");
+
+    return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
 }
 
 exports.createClient = (req, res) => {
@@ -123,53 +132,9 @@ exports.createClient = (req, res) => {
 
             const newClientId = result.insertId;
 
-            if (automaticReservationReminder && (!reminder_datetime || reminder_datetime === "")) {
-                const autoReminderSql = `
-                    INSERT INTO reminders (
-                        client_id,
-                        nom,
-                        prenom,
-                        telephone,
-                        whatsapp,
-                        facebook,
-                        instagram,
-                        snapchat,
-                        tiktok,
-                        reservation_de_quoi,
-                        reservation_date
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `;
-
-                return db.query(
-                    autoReminderSql,
-                    [
-                        newClientId,
-                        nom,
-                        prenom,
-                        telephone,
-                        whatsapp,
-                        facebook,
-                        instagram,
-                        snapchat,
-                        tiktok,
-                        reservation_de_quoi || "Rappel programmé",
-                        reservation_date
-                    ],
-                    (autoReminderErr) => {
-                        if (autoReminderErr) {
-                            console.error(autoReminderErr);
-                        }
-
-                        return res.status(201).json({
-                            success: true,
-                            message: "Client ajouté avec succès.",
-                            id: newClientId
-                        });
-                    }
-                );
-            }
-
+           const reminderDatetime = reminder_datetime
+    ? normalizeReminderDatetime(reminder_datetime)
+    : (reservation === "Oui" ? automaticReservationReminder : null);
             return res.status(201).json({
                 success: true,
                 message: "Client ajouté avec succès.",

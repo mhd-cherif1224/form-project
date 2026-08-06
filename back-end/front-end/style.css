@@ -802,6 +802,22 @@ table{
     min-width:1400px;
 }
 
+.row-fini {
+    background-color: #d4edda; /* light green */
+}
+
+.row-en-cours {
+    background-color: #fbf710; /* light yellow, matches what you had before */
+}
+
+.row-reminder-pending {
+    background-color: #ffc0cb !important; /* pink — takes priority over fini/en_cours */
+}
+
+.rappel-cell {
+    cursor: pointer;
+}
+
 @media (max-width:768px){
 
     th,
