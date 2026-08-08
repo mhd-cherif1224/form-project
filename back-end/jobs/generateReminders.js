@@ -88,40 +88,79 @@ function generateReminders() {
              * Send an email for every reminder that was generated.
              */
             for (const client of clients) {
-                try {
-                    await sendEmailToDev(
-                        `Rappel : ${client.nom} ${client.prenom}`,
-                        `
-Un nouveau rappel est arrivé.
+    try {
+        await sendEmailToDev(
+            `Rappel : ${client.nom} ${client.prenom}`,
+            `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
 
-Nom : ${client.nom || "N/A"}
-Prénom : ${client.prenom || "N/A"}
+                    <h2 style="margin-bottom: 5px;">
+                        Nouveau rappel
+                    </h2>
 
-Téléphone : ${client.telephone || "N/A"}
-WhatsApp : ${client.whatsapp || "N/A"}
+                    <p style="color: #666; margin-top: 0;">
+                        Un nouveau rappel est arrivé.
+                    </p>
 
-Facebook : ${client.facebook || "N/A"}
-Instagram : ${client.instagram || "N/A"}
-Snapchat : ${client.snapchat || "N/A"}
-TikTok : ${client.tiktok || "N/A"}
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
 
-Rappel prévu le : ${client.reminder_datetime || "N/A"}
+                    <h3>Informations du client</h3>
 
-Description :
-${client.description || "N/A"}
-                        `.trim()
-                    );
+                    <p>
+                        <strong>Nom :</strong> ${client.nom || "N/A"}<br>
+                        <strong>Prénom :</strong> ${client.prenom || "N/A"}
+                    </p>
 
-                    console.log(
-                        `Email sent for reminder: ${client.nom} ${client.prenom}`
-                    );
-                } catch (emailError) {
-                    console.error(
-                        `Failed to send email for ${client.nom} ${client.prenom}:`,
-                        emailError
-                    );
-                }
-            }
+                    <h3>Contacts</h3>
+
+                    <p>
+                        <strong>Téléphone :</strong> ${client.telephone || "N/A"}<br>
+                        <strong>WhatsApp :</strong> ${client.whatsapp || "N/A"}<br>
+                        <strong>Facebook :</strong> ${client.facebook || "N/A"}<br>
+                        <strong>Instagram :</strong> ${client.instagram || "N/A"}<br>
+                        <strong>Snapchat :</strong> ${client.snapchat || "N/A"}<br>
+                        <strong>TikTok :</strong> ${client.tiktok || "N/A"}
+                    </p>
+
+                    <h3>Rappel</h3>
+
+                    <p>
+                        <strong>Prévu le :</strong>
+                        ${client.reminder_datetime || "N/A"}
+                    </p>
+
+                    <h3>Description</h3>
+
+                    <div style="
+                        background: #f5f5f5;
+                        padding: 15px;
+                        border-radius: 8px;
+                        white-space: pre-line;
+                    ">
+                        ${client.description || "Aucune description"}
+                    </div>
+
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 25px 0;">
+
+                    <p style="font-size: 12px; color: #888;">
+                        Cet e-mail a été envoyé automatiquement par Ziguad Rappel.
+                    </p>
+
+                </div>
+            `.trim()
+        );
+
+        console.log(
+            `Email sent for reminder: ${client.nom} ${client.prenom}`
+        );
+
+    } catch (emailError) {
+        console.error(
+            `Failed to send email for ${client.nom} ${client.prenom}:`,
+            emailError
+        );
+    }
+}
 
             /*
              * Clear reminder_datetime so the same reminder

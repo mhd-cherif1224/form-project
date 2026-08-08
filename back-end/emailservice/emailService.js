@@ -22,7 +22,7 @@ async function sendEmailToDev(subject, message) {
                         }
                     ],
                     Subject: subject,
-                    TextPart: message
+                    HTMLPart: message
                 }
             ]
         });
