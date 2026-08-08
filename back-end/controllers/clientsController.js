@@ -76,7 +76,9 @@ exports.createClient = (req, res) => {
         reminder_datetime
     } = req.body;
 
-    const reminderDatetime = reminder_datetime ? normalizeReminderDatetime(reminder_datetime) : null;
+    const reminderDatetime = reminder_datetime
+    ? normalizeReminderDatetime(reminder_datetime)
+    : (reservation === "Oui" ? automaticReservationReminder : null);
     const automaticReservationReminder = buildAutomaticReservationReminderDate(reservation_date);
 
     const sql = `
@@ -132,9 +134,6 @@ exports.createClient = (req, res) => {
 
             const newClientId = result.insertId;
 
-           const reminderDatetime = reminder_datetime
-    ? normalizeReminderDatetime(reminder_datetime)
-    : (reservation === "Oui" ? automaticReservationReminder : null);
             return res.status(201).json({
                 success: true,
                 message: "Client ajouté avec succès.",
