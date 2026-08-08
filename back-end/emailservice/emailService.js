@@ -1,9 +1,9 @@
 const Mailjet = require("node-mailjet");
 
-const mailjet = Mailjet.apiConnect(
-    process.env.MAILJET_API_KEY,
-    process.env.MAILJET_SECRET_KEY
-);
+const mailjet = new Mailjet({
+    apiKey: process.env.MAILJET_API_KEY,
+    apiSecret: process.env.MAILJET_SECRET_KEY
+});
 
 async function sendEmailToDev(subject, message) {
     await mailjet
@@ -13,12 +13,12 @@ async function sendEmailToDev(subject, message) {
                 {
                     From: {
                         Email: process.env.MAIL_FROM_EMAIL,
-                        Name: "Your Website"
+                        Name: process.env.MAIL_FROM_NAME
                     },
                     To: [
                         {
                             Email: process.env.DEV_EMAIL,
-                            Name: "Developers"
+                            Name: process.env.DEV_NAME
                         }
                     ],
                     Subject: subject,
