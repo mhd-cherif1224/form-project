@@ -1099,6 +1099,12 @@ floatingReminderBtn.addEventListener("click", () => {
 
 });
 
+reminderModal.addEventListener("click", (event) => {
+    if (event.target === reminderModal) {
+        reminderModal.classList.add("hidden");
+    }
+});
+
 cancelReminderBtn.addEventListener("click", () => {
     reminderModal.classList.add("hidden");
 });
