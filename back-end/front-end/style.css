@@ -818,6 +818,10 @@ table{
     cursor: pointer;
 }
 
+#reservationGroup{
+    margin-top:6px;
+}
+
 @media (max-width:768px){
 
     th,
