@@ -110,7 +110,9 @@ loginForm.addEventListener('submit', async (e) => {
         }
 
         if (mode === 'login') {
-            window.location.href = COPY.login.successRedirect;
+            console.log('LOGIN SUCCESS - REDIRECTING');
+            window.location.href = '/';
+
         } else {
             // signup succeeded — switch to login mode so they can sign in
             mode = 'login';
