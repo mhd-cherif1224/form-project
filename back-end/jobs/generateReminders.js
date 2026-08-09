@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const { EventEmitter } = require("events");
 const db = require("../config/db");
 const { sendEmailToDev } = require("../emailservice/emailService");
+const {sendFlightReservationSMS} = require("../smsservice/smsService");
 
 const reminderEvents = new EventEmitter();
 
@@ -204,7 +205,7 @@ function generateReservationReminders() {
         FROM clients c
         WHERE c.reservation = 'Oui'
           AND c.reservation_date IS NOT NULL
-          AND DATE(c.reservation_date) = CURDATE()
+          AND DATE(c.reservation_date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
           AND NOT EXISTS (
               SELECT 1
               FROM reminders r
@@ -256,7 +257,7 @@ function generateReservationReminders() {
             FROM clients c
             WHERE c.reservation = 'Oui'
               AND c.reservation_date IS NOT NULL
-              AND DATE(c.reservation_date) = CURDATE()
+              AND DATE(c.reservation_date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
               AND NOT EXISTS (
                   SELECT 1
                   FROM reminders r
@@ -317,6 +318,31 @@ TikTok : ${client.tiktok || "N/A"}
                         emailError
                     );
                 }
+
+                // Also SMS the client directly, so they get their own reminder
+                if (client.telephone) {
+                    try {
+                        await sendFlightReservationSMS({
+                            nom: client.nom,
+                            prenom: client.prenom,
+                            telephone: client.telephone,
+                            reservation_time: client.reservation_date
+                        });
+
+                        console.log(
+                            `Reservation SMS sent for: ${client.nom} ${client.prenom}`
+                        );
+                    } catch (smsError) {
+                        console.error(
+                            `Failed to send reservation SMS for ${client.nom} ${client.prenom}:`,
+                            smsError
+                        );
+                    }
+                } else {
+                    console.log(
+                        `No phone number for ${client.nom} ${client.prenom}, skipping SMS`
+                    );
+                }
             }
 
             reminderEvents.emit("reminder-generated", {
@@ -338,7 +364,7 @@ cron.schedule("* * * * *", generateReminders);
  * Reservation reminders:
  * 08:00 UTC = 09:00 Algeria/Sétif
  */
-cron.schedule("0 8 * * *", generateReservationReminders);
+cron.schedule("30 12 * * *", generateReservationReminders);
 
 
 /*

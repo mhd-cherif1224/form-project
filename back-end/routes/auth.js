@@ -1,27 +1,10 @@
-const express = require("express");
-const router = express.Router();
+// routes/auth.js
+const express = require('express');
 const bcrypt = require('bcrypt');
+const router = express.Router();
+const db = require('../config/db');
 
-
-const {
-    createClient,
-    getClients,
-    updateClient,
-    checkClient,
-    getReminders,
-    dismissReminder,
-    setReminder
-} = require("../controllers/clientsController");
-
-router.delete("/reminders/:id", dismissReminder);
-router.get("/reminders", getReminders);
-router.get("/check", checkClient);
-router.get("/", getClients);
-router.post("/", createClient);
-router.put("/:id/reminder", setReminder);
-router.put("/:id", updateClient);
-
-
+const dbPromise = db.promise(); // ADD THIS — wraps the callback connection in a promise interface
 
 // Signup
 router.post('/signup', async (req, res) => {
@@ -32,13 +15,13 @@ router.post('/signup', async (req, res) => {
   }
 
   try {
-    const [existing] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
+    const [existing] = await dbPromise.query('SELECT id FROM users WHERE username = ?', [username]);
     if (existing.length > 0) {
       return res.status(409).send('Username already taken');
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    await db.query('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash]);
+    await dbPromise.query('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash]);
 
     res.status(201).send('Account created');
   } catch (err) {
@@ -52,7 +35,7 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+    const [rows] = await dbPromise.query('SELECT * FROM users WHERE username = ?', [username]);
     const user = rows[0];
 
     if (!user) {
@@ -80,6 +63,5 @@ router.post('/logout', (req, res) => {
     res.send('Logged out');
   });
 });
-
 
 module.exports = router;

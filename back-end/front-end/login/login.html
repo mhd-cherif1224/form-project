@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — Gestion des Clients</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="login.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body class="login-body">
+
+<div class="login-wrapper">
+
+    <div class="login-card">
+
+        <div class="login-brand">
+            <div class="login-brand-icon">
+                <ion-icon name="people-outline"></ion-icon>
+            </div>
+            <h2>Gestion des Clients</h2>
+        </div>
+
+        <h1 id="loginTitle">Connexion</h1>
+        <p class="login-subtitle" id="loginSubtitle">Connectez-vous pour accéder à votre espace.</p>
+
+        <div id="formError" class="form-error hidden">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span id="formErrorText">Une erreur est survenue.</span>
+        </div>
+
+        <form id="loginForm">
+
+            <div class="group">
+                <label for="username">Nom d'utilisateur</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Votre nom d'utilisateur"
+                    autocomplete="username"
+                    required>
+            </div>
+
+            <div class="group">
+                <label for="password">Mot de passe</label>
+                <div class="password-field">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Votre mot de passe"
+                        autocomplete="current-password"
+                        required>
+                    <button type="button" id="togglePassword" class="toggle-password" aria-label="Afficher le mot de passe">
+                        <ion-icon name="eye-outline"></ion-icon>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                <ion-icon name="log-in-outline"></ion-icon>
+                <span id="submitBtnText">Se connecter</span>
+            </button>
+
+        </form>
+
+        <p class="switch-mode">
+            <span id="switchModeText"></span>
+            <a href="#" id="switchModeLink"></a>
+        </p>
+
+    </div>
+
+</div>
+
+<script src="login.js"></script>
+</body>
+</html>
