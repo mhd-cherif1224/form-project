@@ -31,26 +31,59 @@ router.post('/signup', async (req, res) => {
 });
 
 // Login
+r// Login
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
+  console.log("1 - LOGIN REQUEST:", username);
+
   try {
-    const [rows] = await dbPromise.query('SELECT * FROM users WHERE username = ?', [username]);
+    console.log("2 - SEARCHING DATABASE...");
+
+    const [rows] = await dbPromise.query(
+      'SELECT * FROM users WHERE username = ?',
+      [username]
+    );
+
+    console.log("3 - USERS FOUND:", rows.length);
+
     const user = rows[0];
 
     if (!user) {
+      console.log("4 - USER NOT FOUND");
+
       return res.status(401).send('Invalid username or password');
     }
 
-    const match = await bcrypt.compare(password, user.password_hash);
+    console.log("4 - USER FOUND:", user.username);
+    console.log("5 - STORED HASH:", user.password_hash);
+    console.log("6 - CHECKING PASSWORD...");
+
+    const match = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
+
+    console.log("7 - PASSWORD MATCH:", match);
+
     if (!match) {
+      console.log("8 - INVALID PASSWORD");
+
       return res.status(401).send('Invalid username or password');
     }
+
+    console.log("8 - PASSWORD CORRECT");
+    console.log("9 - CREATING SESSION...");
 
     req.session.userId = user.id;
+
+    console.log("10 - SESSION CREATED:", req.session.userId);
+
     res.send('Logged in');
+
   } catch (err) {
-    console.error(err);
+    console.error("LOGIN ERROR:", err);
+
     res.status(500).send('Server error');
   }
 });
