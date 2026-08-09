@@ -25,11 +25,11 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 1000 * 60 * 60 * 24
-  }
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  maxAge: 1000 * 60 * 60 * 24
+}
 }));
 
 const authRoutes = require("./routes/auth");
