@@ -1,6 +1,36 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const { reminderEvents } = require("../jobs/generateReminders");
+
+router.get("/reminders/events", (req, res) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no"); // stops proxies from buffering the stream
+
+    res.flushHeaders();
+
+    // Tell the browser to retry quickly if the connection drops
+    res.write("retry: 2000\n\n");
+
+    const sendEvent = (data) => {
+        res.write(`event: reminder-generated\n`);
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    reminderEvents.on("reminder-generated", sendEvent);
+
+    // Heartbeat so Railway's proxy doesn't kill the connection as idle
+    const heartbeat = setInterval(() => {
+        res.write(":heartbeat\n\n");
+    }, 20000);
+
+    req.on("close", () => {
+        clearInterval(heartbeat);
+        reminderEvents.off("reminder-generated", sendEvent);
+    });
+});
 
 
 const {
