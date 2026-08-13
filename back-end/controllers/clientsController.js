@@ -76,10 +76,11 @@ exports.createClient = (req, res) => {
         reminder_datetime
     } = req.body;
 
+    const automaticReservationReminder = buildAutomaticReservationReminderDate(reservation_date);
     const reminderDatetime = reminder_datetime
     ? normalizeReminderDatetime(reminder_datetime)
     : (reservation === "Oui" ? automaticReservationReminder : null);
-    const automaticReservationReminder = buildAutomaticReservationReminderDate(reservation_date);
+   
 
     const sql = `
         INSERT INTO clients (
