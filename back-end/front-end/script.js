@@ -1,3 +1,35 @@
+
+// ==============================
+// Reminders / Notifications
+// ==============================
+let dismissedReminderIds = new Set();
+const notifBell = document.getElementById("notifBell");
+const notifBadge = document.getElementById("notifBadge");
+const notifDropdown = document.getElementById("notifDropdown");
+const notifList = document.getElementById("notifList");
+
+let lastReminderIds = new Set();
+let remindersEventSource = null;
+
+function initializeReminderEvents() {
+    if (!window.EventSource || remindersEventSource) {
+        return;
+    }
+
+    remindersEventSource = new EventSource("/api/clients/reminders/events");
+
+    remindersEventSource.addEventListener("reminder-generated", () => {
+        checkReminders();
+    });
+
+    remindersEventSource.onerror = (error) => {
+        console.error("Erreur de connexion aux rappels en temps réel:", error);
+    };
+}
+
+
+initializeReminderEvents();
+
 // ==============================
 // Elements
 // ==============================
@@ -648,34 +680,6 @@ function validateForm() {
 }
 
 
-// ==============================
-// Reminders / Notifications
-// ==============================
-let dismissedReminderIds = new Set();
-const notifBell = document.getElementById("notifBell");
-const notifBadge = document.getElementById("notifBadge");
-const notifDropdown = document.getElementById("notifDropdown");
-const notifList = document.getElementById("notifList");
-
-let lastReminderIds = new Set();
-let remindersEventSource = null;
-
-function initializeReminderEvents() {
-    if (!window.EventSource || remindersEventSource) {
-        return;
-    }
-
-    remindersEventSource = new EventSource("/api/clients/reminders/events");
-
-    remindersEventSource.addEventListener("reminder-generated", () => {
-        checkReminders();
-    });
-
-    remindersEventSource.onerror = (error) => {
-        console.error("Erreur de connexion aux rappels en temps réel:", error);
-    };
-}
-
 async function checkReminders() {
 
     try {
@@ -750,9 +754,16 @@ async function checkReminders() {
         const currentIds = new Set(reminders.map(r => r.id));
 
         reminders.forEach(reminder => {
-            if (!lastReminderIds.has(reminder.id)) {
-                triggerBrowserNotification(reminder);
-            }
+                    if (hasLoadedInitialReminders) {
+    reminders.forEach(reminder => {
+        if (!lastReminderIds.has(reminder.id)) {
+            triggerBrowserNotification(reminder);
+        }
+    });
+}
+
+lastReminderIds = currentIds;
+hasLoadedInitialReminders = true;
         });
 
         lastReminderIds = currentIds;
@@ -939,7 +950,7 @@ document.addEventListener("click", (e) => {
 
 // Check immediately on load and keep the page synced in real time.
 checkReminders();
-initializeReminderEvents();
+
 // ==============================
 // Submit Form
 // ==============================
