@@ -53,8 +53,8 @@ function generateReminders() {
                 instagram,
                 snapchat,
                 tiktok,
-                reservation_de_quoi,
-                reservation_date
+                message,
+                reminder_datetime
             )
             SELECT
                 id,
