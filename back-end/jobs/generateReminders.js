@@ -54,7 +54,7 @@ function generateReminders() {
                 snapchat,
                 tiktok,
                 reservation_de_quoi,
-                reminder_datetime
+                reservation_date
             )
             SELECT
                 id,
@@ -68,14 +68,14 @@ function generateReminders() {
                 tiktok,
                 'Rappel programmé',
                 reminder_datetime
-                        FROM clients
-                        WHERE reminder_datetime IS NOT NULL
-                            AND reminder_datetime <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR)
-                            AND NOT EXISTS (
-                                    SELECT 1 FROM reminders r
-                                    WHERE r.client_id = clients.id
-                                        AND r.reminder_datetime = clients.reminder_datetime
-                            )
+            FROM clients
+            WHERE reminder_datetime IS NOT NULL
+              AND reminder_datetime <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR)
+              AND NOT EXISTS (
+                  SELECT 1 FROM reminders r
+                  WHERE r.client_id = clients.id
+                    AND r.reservation_date = clients.reminder_datetime
+              )
         `;
 
         db.query(insertSql, async (err, result) => {
