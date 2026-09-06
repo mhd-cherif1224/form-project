@@ -225,6 +225,7 @@ function displayClients(clientList) {
 
     return `
         <tr class="client-row ${statusClass}" data-id="${client.id}" id="client-${client.id}">
+            <td>${formatDate(client.created_at)}</td>
             <td>${client.nom}</td>
             <td>${client.prenom}</td>
             <td>${client.fonctionne}</td>
