@@ -11,9 +11,41 @@ require("./config/db");
 
 const reminderJob = require("./jobs/generateReminders");
 
+// Server-Sent Events clients registry
+const sseClients = new Map();
+
 app.get("/api/clients/reminders/events", (req, res) => {
-    // ...unchanged...
+    res.set({
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+    });
+
+    // Send a comment to establish the stream
+    res.write(`: connected\n\n`);
+
+    const clientId = Date.now() + Math.random();
+    sseClients.set(clientId, res);
+
+    req.on("close", () => {
+        sseClients.delete(clientId);
+    });
 });
+
+// Forward reminder events from the job to all connected SSE clients
+if (reminderJob && reminderJob.reminderEvents) {
+    reminderJob.reminderEvents.on("reminder-generated", (payload) => {
+        const data = JSON.stringify(payload || {});
+        for (const [, clientRes] of sseClients) {
+            try {
+                clientRes.write(`event: reminder-generated\n`);
+                clientRes.write(`data: ${data}\n\n`);
+            } catch (err) {
+                // ignore write errors; client 'close' handler will clean up
+            }
+        }
+    });
+}
 
 // Middlewares
 app.use(cors());
