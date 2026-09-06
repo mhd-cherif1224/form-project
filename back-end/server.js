@@ -10,6 +10,7 @@ const app = express();
 require("./config/db");
 
 const reminderJob = require("./jobs/generateReminders");
+const { sendEmailToDev } = require("./emailservice/emailService");
 
 // Server-Sent Events clients registry
 const sseClients = new Map();
@@ -96,4 +97,18 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+// Debug endpoint to trigger an email send (temporary)
+app.get("/api/debug/send-email", async (req, res) => {
+    const subject = req.query.subject || "Test email from server";
+    const message = req.query.message || "This is a test email.";
+
+    try {
+        const ok = await sendEmailToDev(subject, message);
+        return res.json({ ok });
+    } catch (err) {
+        console.error("debug send email failed", err);
+        return res.status(500).json({ ok: false, error: String(err) });
+    }
 });
