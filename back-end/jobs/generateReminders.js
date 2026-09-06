@@ -42,7 +42,7 @@ function generateReminders() {
          * Insert the due reminders into the reminders table.
          */
         const insertSql = `
-            INSERT INTO reminders
+            INSERT IGNORE INTO reminders
             (
                 client_id,
                 nom,
@@ -233,7 +233,7 @@ function generateReservationReminders() {
          * Insert reservation reminders.
          */
         const insertSql = `
-            INSERT INTO reminders
+            INSERT IGNORE INTO reminders
             (
                 client_id,
                 nom,
