@@ -1,13 +1,23 @@
 // routes/auth.js
 const express = require('express');
 const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const db = require('../config/db');
 
 const dbPromise = db.promise(); // ADD THIS — wraps the callback connection in a promise interface
 
+// Rate limiter for auth routes — 10 attempts per 15 min per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many attempts, please try again later',
+});
+
 // Signup
-router.post('/signup', async (req, res) => {
+router.post('/signup', authLimiter, async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -31,7 +41,7 @@ router.post('/signup', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { username, password } = req.body;
 
   console.log("1 - LOGIN REQUEST:", username);
@@ -55,7 +65,6 @@ router.post('/login', async (req, res) => {
     }
 
     console.log("4 - USER FOUND:", user.username);
-    console.log("5 - STORED HASH:", user.password_hash);
     console.log("6 - CHECKING PASSWORD...");
 
     const match = await bcrypt.compare(
@@ -63,7 +72,6 @@ router.post('/login', async (req, res) => {
       user.password_hash
     );
 
-    console.log("7 - PASSWORD MATCH:", match);
 
     if (!match) {
       console.log("8 - INVALID PASSWORD");
