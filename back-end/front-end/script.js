@@ -43,6 +43,7 @@ const addSection = document.getElementById("addClientSection");
 const listSection = document.getElementById("listClientSection");
 
 const searchInput = document.getElementById("searchInput");
+const statusLegend = document.getElementById("statusLegend");
 
 // ==============================
 // Form Elements
@@ -354,6 +355,7 @@ addTab.addEventListener("click", () => {
     listSection.classList.add("hidden");
 
     searchInput.style.display = "none";
+    statusLegend.classList.add("hidden");
 
 });
 
@@ -366,6 +368,7 @@ listTab.addEventListener("click", () => {
     listSection.classList.remove("hidden");
 
     searchInput.style.display = "block";
+    statusLegend.classList.remove("hidden");
 
     loadClients(1, ""); // reset to page 1, no search filter
 
