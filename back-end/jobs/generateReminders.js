@@ -54,7 +54,8 @@ function generateReminders() {
                 snapchat,
                 tiktok,
                 reservation_de_quoi,
-                reservation_date
+                reservation_date,
+                assigne_a
             )
             SELECT
                 id,
@@ -67,7 +68,8 @@ function generateReminders() {
                 snapchat,
                 tiktok,
                 'Rappel programmé',
-                reminder_datetime
+                reminder_datetime,
+                assigne_a
             FROM clients
             WHERE reminder_datetime IS NOT NULL
               AND reminder_datetime <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR)
@@ -96,64 +98,98 @@ function generateReminders() {
             for (const client of clients) {
     try {
         await sendEmailToDev(
-            `Rappel : ${client.nom} ${client.prenom}`,
-            `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+    `Rappel : ${client.nom} ${client.prenom} - ${client.assigne_a || "N/A"}`,
+    `
+        <div style="font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f4f5f7; padding: 24px;">
 
-                    <h2 style="margin-bottom: 5px;">
+            <div style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+
+                <!-- Header -->
+                <div style="background: #4f46e5; padding: 24px 28px;">
+                    <p style="margin: 0; color: #e0e7ff; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">
+                        Ziguad Rappel
+                    </p>
+                    <h1 style="margin: 4px 0 0; color: #ffffff; font-size: 20px;">
                         Nouveau rappel
-                    </h2>
+                    </h1>
+                </div>
 
-                    <p style="color: #666; margin-top: 0;">
-                        Un nouveau rappel est arrivé.
-                    </p>
+                <div style="padding: 28px;">
 
-                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    <!-- Client + assignment badge -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div>
+                            <p style="margin: 0; font-size: 18px; font-weight: 600; color: #111827;">
+                                ${client.nom || "N/A"} ${client.prenom || ""}
+                            </p>
+                        </div>
+                        <span style="background: #eef2ff; color: #4f46e5; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; white-space: nowrap;">
+                            ${client.assigne_a || "Non assigné"}
+                        </span>
+                    </div>
 
-                    <h3>Informations du client</h3>
+                    <!-- Reminder date, highlighted -->
+                    <div style="background: #fef9c3; border-left: 4px solid #eab308; border-radius: 6px; padding: 12px 16px; margin-bottom: 24px;">
+                        <p style="margin: 0; font-size: 12px; color: #854d0e; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Prévu le
+                        </p>
+                        <p style="margin: 2px 0 0; font-size: 15px; font-weight: 600; color: #713f12;">
+                            ${client.reminder_datetime || "N/A"}
+                        </p>
+                    </div>
 
-                    <p>
-                        <strong>Nom :</strong> ${client.nom || "N/A"}<br>
-                        <strong>Prénom :</strong> ${client.prenom || "N/A"}
-                    </p>
+                    <!-- Contacts -->
+                    <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; margin: 0 0 10px;">
+                        Contacts
+                    </h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 14px; color: #6b7280; width: 40%;">Téléphone</td>
+                            <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 500;">${client.telephone || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 14px; color: #6b7280;">WhatsApp</td>
+                            <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 500;">${client.whatsapp || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 14px; color: #6b7280;">Facebook</td>
+                            <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 500;">${client.facebook || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 14px; color: #6b7280;">Instagram</td>
+                            <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 500;">${client.instagram || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 14px; color: #6b7280;">Snapchat</td>
+                            <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 500;">${client.snapchat || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 14px; color: #6b7280;">TikTok</td>
+                            <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 500;">${client.tiktok || "N/A"}</td>
+                        </tr>
+                    </table>
 
-                    <h3>Contacts</h3>
-
-                    <p>
-                        <strong>Téléphone :</strong> ${client.telephone || "N/A"}<br>
-                        <strong>WhatsApp :</strong> ${client.whatsapp || "N/A"}<br>
-                        <strong>Facebook :</strong> ${client.facebook || "N/A"}<br>
-                        <strong>Instagram :</strong> ${client.instagram || "N/A"}<br>
-                        <strong>Snapchat :</strong> ${client.snapchat || "N/A"}<br>
-                        <strong>TikTok :</strong> ${client.tiktok || "N/A"}
-                    </p>
-
-                    <h3>Rappel</h3>
-
-                    <p>
-                        <strong>Prévu le :</strong>
-                        ${client.reminder_datetime || "N/A"}
-                    </p>
-
-                    <h3>Description</h3>
-
-                    <div style="
-                        background: #f5f5f5;
-                        padding: 15px;
-                        border-radius: 8px;
-                        white-space: pre-line;
-                    ">
+                    <!-- Description -->
+                    <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; margin: 0 0 10px;">
+                        Description
+                    </h3>
+                    <div style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; font-size: 14px; color: #374151; white-space: pre-line; line-height: 1.5;">
                         ${client.description || "Aucune description"}
                     </div>
 
-                    <hr style="border: none; border-top: 1px solid #ddd; margin: 25px 0;">
+                </div>
 
-                    <p style="font-size: 12px; color: #888;">
+                <!-- Footer -->
+                <div style="background: #f9fafb; padding: 16px 28px; border-top: 1px solid #eee;">
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">
                         Cet e-mail a été envoyé automatiquement par Ziguad Rappel.
                     </p>
-
                 </div>
-            `.trim()
+
+            </div>
+        </div>
+        `.trim()
+
         );
 
         console.log(
@@ -245,7 +281,8 @@ function generateReservationReminders() {
                 snapchat,
                 tiktok,
                 reservation_de_quoi,
-                reservation_date
+                reservation_date,
+                assigne_a
             )
             SELECT
                 c.id,
@@ -258,7 +295,8 @@ function generateReservationReminders() {
                 c.snapchat,
                 c.tiktok,
                 c.reservation_de_quoi,
-                c.reservation_date
+                c.reservation_date,
+                c.assigne_a
             FROM clients c
             WHERE c.reservation = 'Oui'
               AND c.reservation_date IS NOT NULL
@@ -294,7 +332,7 @@ function generateReservationReminders() {
             for (const client of clients) {
                 try {
                     await sendEmailToDev(
-                        `Réservation : ${client.nom} ${client.prenom}`,
+                        `Réservation : ${client.nom} ${client.prenom} - ${client.assigne_a || "N/A"}`,
                         `
 Une réservation nécessite votre attention.
 

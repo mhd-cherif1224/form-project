@@ -737,6 +737,7 @@ async function checkReminders() {
                 <strong>${reminder.nom} ${reminder.prenom}</strong>
                 <span>${reminder.reservation_de_quoi ?? "Réservation"} — ${formatDate(getReminderTimestampValue(reminder))}</span>
                 <span class="notif-contact">
+                    ${reminder.assigne_a ? `<ion-icon name="person-outline"></ion-icon> Assigné à: ${reminder.assigne_a}<br>` : ""}
                     ${reminder.telephone ? `<ion-icon name="call-outline"></ion-icon> ${reminder.telephone}<br>` : ""}
                     ${reminder.whatsapp ? `<ion-icon name="logo-whatsapp"></ion-icon> ${reminder.whatsapp}<br>` : ""}
                     ${reminder.facebook ? `<ion-icon name="logo-facebook"></ion-icon> ${reminder.facebook}<br>` : ""}
