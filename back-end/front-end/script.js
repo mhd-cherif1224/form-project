@@ -195,9 +195,35 @@ function rebuildPendingReminderMap(reminders) {
 // ==============================
 
 
+function updateStatusLegend(clientList = clients) {
+    const counts = { red: 0, yellow: 0, green: 0 };
+
+    clientList.forEach(client => {
+        const hasPendingReminder = Boolean(pendingReminderByClientId.get(client.id));
+
+        if (hasPendingReminder) {
+            counts.red += 1;
+        } else if (client.travail === "fini") {
+            counts.green += 1;
+        } else if (client.travail === "en_cours") {
+            counts.yellow += 1;
+        }
+    });
+
+    const redCount = document.getElementById("statusRedCount");
+    const yellowCount = document.getElementById("statusYellowCount");
+    const greenCount = document.getElementById("statusGreenCount");
+
+    if (redCount) redCount.textContent = counts.red;
+    if (yellowCount) yellowCount.textContent = counts.yellow;
+    if (greenCount) greenCount.textContent = counts.green;
+}
+
 function displayClients(clientList) {
 
     const table = document.getElementById("clientsTableBody");
+
+    updateStatusLegend(clientList);
 
     if (clientList.length === 0) {
         table.innerHTML = `
@@ -701,7 +727,9 @@ async function checkReminders() {
             return;
         }
 
-        notifList.innerHTML = reminders.map(reminder => `
+        const sortedReminders = [...reminders].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+
+        notifList.innerHTML = sortedReminders.map(reminder => `
             <div class="notif-item" data-id="${reminder.id}">
                 <strong>${reminder.nom} ${reminder.prenom}</strong>
                 <span>${reminder.reservation_de_quoi ?? "Réservation"} — ${formatDate(getReminderTimestampValue(reminder))}</span>

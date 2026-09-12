@@ -439,7 +439,7 @@ exports.checkClient = (req, res) => {
 
 exports.getReminders = (req, res) => {
 
-    const sql = `SELECT * FROM reminders ORDER BY nom ASC`;
+    const sql = `SELECT * FROM reminders ORDER BY id DESC`;
 
     db.query(sql, (err, result) => {
 

@@ -356,6 +356,61 @@ header h2{
 
 }
 
+.status-legend{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+    width:max-content;
+    max-width:calc(100% - 32px);
+    margin:0 0 20px 32px;
+    padding:10px 16px;
+    background:rgba(255,255,255,0.96);
+    border:1px solid #e2e5eb;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(20,25,40,.04);
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#1f2430;
+    font-size:14px;
+    font-weight:600;
+}
+
+.legend-item strong{
+    min-width:18px;
+    text-align:center;
+    background:#f4f7fc;
+    border:1px solid #e2e5eb;
+    border-radius:999px;
+    padding:2px 7px;
+    font-size:12px;
+    color:#1f2430;
+}
+
+.legend-dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    display:inline-block;
+    box-shadow:0 0 0 2px rgba(15,23,42,.06);
+}
+
+.legend-red{
+    background:#ef4444;
+}
+
+.legend-yellow{
+    background:#facc15;
+}
+
+.legend-green{
+    background:#22c55e;
+}
+
 nav{
 
     display:flex;
