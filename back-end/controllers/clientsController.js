@@ -27,6 +27,30 @@ function normalizeReminderDatetime(reminder_datetime) {
 
     return reminder_datetime.replace("T", " ") + ":00";
 }
+
+function normalizeAssignedWorker(name) {
+    if (!name) {
+        return null;
+    }
+
+    const workerMap = {
+        "Aouchiche Zakari": "Saichi Juba",
+        "aouchiche zakari": "Saichi Juba",
+        "Saichi Juba": "Saichi Juba",
+        "saichi juba": "Saichi Juba",
+        "Sadaoui Mordjane": "Sadaoui Mordjane",
+        "sadaoui mordjane": "Sadaoui Mordjane",
+        "Sadaoui Reda": "Sadaoui Reda",
+        "sadaoui reda": "Sadaoui Reda",
+        "Faycal Mancer": "Faycal Mancer",
+        "faycal mancer": "Faycal Mancer",
+        "Riyad Mancer": "Riyad Mancer",
+        "riyad mancer": "Riyad Mancer"
+    };
+
+    return workerMap[String(name).trim()] ?? String(name).trim();
+}
+
 function buildAutomaticReservationReminderDate(reservation_date) {
     if (!reservation_date) {
         return null;
@@ -76,6 +100,7 @@ exports.createClient = (req, res) => {
         reminder_datetime
     } = req.body;
 
+    const normalizedAssignee = normalizeAssignedWorker(assigne_a);
     const automaticReservationReminder = buildAutomaticReservationReminderDate(reservation_date);
     const reminderDatetime = reminder_datetime
     ? normalizeReminderDatetime(reminder_datetime)
@@ -121,7 +146,7 @@ exports.createClient = (req, res) => {
             reservation_date,
             description,
             travail,
-            assigne_a,
+            normalizedAssignee,
             reminderDatetime
         ],
         (err, result) => {
@@ -240,6 +265,7 @@ exports.updateClient = (req, res) => {
         const safeReservationDeQuoi = reservation_de_quoi ?? existingClient.reservation_de_quoi ?? null;
         const safeReservationDate = reservation_date ?? existingClient.reservation_date ?? null;
         const existingReminder = existingClient.reminder_datetime ?? null;
+        const normalizedAssignee = normalizeAssignedWorker(assigne_a ?? existingClient.assigne_a);
         const reminderDatetime = reminder_datetime
             ? normalizeReminderDatetime(reminder_datetime)
             : existingReminder;
@@ -283,7 +309,7 @@ exports.updateClient = (req, res) => {
                 safeReservationDate,
                 description ?? existingClient.description,
                 travail ?? existingClient.travail,
-                assigne_a ?? existingClient.assigne_a,
+                normalizedAssignee,
                 reminderDatetime,
                 id
             ],
